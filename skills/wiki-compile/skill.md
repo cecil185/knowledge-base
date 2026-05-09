@@ -10,9 +10,9 @@ Process raw docs that have not yet been compiled into the wiki and update the st
 
 ## Step 1: Identify uncompiled raw docs
 
-Read `/Users/cecil/Code/me/wiki-workflow/raw/INDEX.md` to get the full list of ingested raw files.
+Read `/Users/cecil/Code/me/knowledge-base/raw/INDEX.md` to get the full list of ingested raw files.
 
-Read `/Users/cecil/Code/me/wiki-workflow/wiki/INDEX.md` if it exists. If not, treat the wiki as empty.
+Read `/Users/cecil/Code/me/knowledge-base/wiki/INDEX.md` if it exists. If not, treat the wiki as empty.
 
 Compare the two indexes to identify raw docs not yet referenced in any wiki article. A raw doc is considered compiled if its slug appears in the `sources` frontmatter of at least one wiki article. Check by scanning frontmatter of all existing files under `wiki/concepts/` and `wiki/tools/`.
 
@@ -35,7 +35,7 @@ For each distinct concept identified across all new raw docs:
 
 Generate a slug: lowercase, hyphen-separated, max 60 characters.
 
-Check whether `/Users/cecil/Code/me/wiki-workflow/wiki/concepts/<slug>.md` already exists.
+Check whether `/Users/cecil/Code/me/knowledge-base/wiki/concepts/<slug>.md` already exists.
 
 **If it does not exist**, create it:
 
@@ -75,7 +75,7 @@ For each distinct tool or framework identified across all new raw docs:
 
 Generate a slug from the tool name: lowercase, hyphen-separated, max 60 characters.
 
-Check whether `/Users/cecil/Code/me/wiki-workflow/wiki/tools/<slug>.md` already exists.
+Check whether `/Users/cecil/Code/me/knowledge-base/wiki/tools/<slug>.md` already exists.
 
 **If it does not exist**, create it:
 
@@ -117,7 +117,7 @@ After writing all new and updated articles:
 
 ## Step 6: Update wiki/INDEX.md
 
-Rewrite `/Users/cecil/Code/me/wiki-workflow/wiki/INDEX.md` with two sections: `## Concepts` and `## Tools`. Each entry:
+Rewrite `/Users/cecil/Code/me/knowledge-base/wiki/INDEX.md` with two sections: `## Concepts` and `## Tools`. Each entry:
 
 ```
 - [[Title]] — <one-line hook: what it is and why it matters>
@@ -127,7 +127,7 @@ Sort each section alphabetically by title. Include all articles in `wiki/concept
 
 ## Step 7: Update wiki/SUMMARY.md
 
-Rewrite `/Users/cecil/Code/me/wiki-workflow/wiki/SUMMARY.md` with:
+Rewrite `/Users/cecil/Code/me/knowledge-base/wiki/SUMMARY.md` with:
 
 ```
 # Wiki Summary

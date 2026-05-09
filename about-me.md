@@ -120,6 +120,6 @@ Each subdirectory is its own Git repo hosted on GitLab.
 
 **`/Users/cecil/Code/me/`** — personal repos separate from Teamworks work.
 
-**wiki-workflow** (this repo) — personal learning system. Evaluates tech articles, logs them, surfaces patterns over time. Linear team: CCTD (personal workspace).
+**Purpose** (this repo) — personal learning system. Evaluates tech articles, logs them, surfaces patterns over time. Linear team: CC (personal workspace).
 - `Work` project — tickets for building the system
 - `Wiki` project — tickets for high-value articles worth acting on

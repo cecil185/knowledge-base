@@ -10,7 +10,7 @@ Reads an article in full, posts a structured summary as a comment on its Linear 
 
 ## Input
 
-Either a Linear ticket ID (e.g. `CCTD-42`) or an article URL.
+Either a Linear ticket ID (e.g. `CC-42`) or an article URL.
 
 - If a **ticket ID** is given: read the ticket description to extract the URL.
 - If a **URL** is given: search the Linear Wiki project for a ticket whose description contains that URL. If no ticket is found, stop and report the error — do not proceed without a ticket.
@@ -32,7 +32,7 @@ If the fetch fails or the content appears to be a paywall or login wall (thin co
 
 ## Step 2: Read goal.md
 
-Read `/Users/cecil/Code/me/wiki-workflow/goal.md` to ground the summary in Cecil's current learning goals. Use the goal's Reading intent and High-relevance signals fields when writing the "How it relates to your goal" section.
+Read `/Users/cecil/Code/me/knowledge-base/goal.md` to ground the summary in Cecil's current learning goals. Use the goal's Reading intent and High-relevance signals fields when writing the "How it relates to your goal" section.
 
 ## Step 3: Post summary comment
 
@@ -63,7 +63,7 @@ Using the Linear MCP tools:
 
 Generate a slug from the article title: lowercase, spaces and punctuation replaced with hyphens, truncated to 60 characters.
 
-Write the file to `/Users/cecil/Code/me/wiki-workflow/raw/<slug>.md` with this frontmatter followed by the full article body:
+Write the file to `/Users/cecil/Code/me/knowledge-base/raw/<slug>.md` with this frontmatter followed by the full article body:
 
 ```
 ---
@@ -77,7 +77,7 @@ tags: []
 <full article body>
 ```
 
-Then append one line to `/Users/cecil/Code/me/wiki-workflow/raw/INDEX.md` (create the file with a `# Raw Article Index` header if it does not exist):
+Then append one line to `/Users/cecil/Code/me/knowledge-base/raw/INDEX.md` (create the file with a `# Raw Article Index` header if it does not exist):
 
 ```
 - [<title>](<slug>.md) — <ticket ID> — <YYYY-MM-DD>

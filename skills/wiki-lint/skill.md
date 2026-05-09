@@ -16,9 +16,9 @@ Audits the wiki knowledge base for health issues and growth opportunities. Run p
 
 Read the following files. If any are missing, note the absence in findings and continue — do not abort.
 
-- `/Users/cecil/Code/me/wiki-workflow/wiki/INDEX.md`
-- `/Users/cecil/Code/me/wiki-workflow/wiki/SUMMARY.md`
-- `/Users/cecil/Code/me/wiki-workflow/raw/INDEX.md`
+- `/Users/cecil/Code/me/knowledge-base/wiki/INDEX.md`
+- `/Users/cecil/Code/me/knowledge-base/wiki/SUMMARY.md`
+- `/Users/cecil/Code/me/knowledge-base/raw/INDEX.md`
 
 Parse each index into a list of (slug, file path, title) entries. Record every entry so later steps can cross-reference them.
 
@@ -88,7 +88,7 @@ Collect findings:
 
 ## Step 7: Write wiki/LINT.md
 
-Write all findings to `/Users/cecil/Code/me/wiki-workflow/wiki/LINT.md`, overwriting any previous run. Use this exact structure:
+Write all findings to `/Users/cecil/Code/me/knowledge-base/wiki/LINT.md`, overwriting any previous run. Use this exact structure:
 
 ```
 ---

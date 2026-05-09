@@ -21,8 +21,8 @@ A natural-language question from the user. Examples:
 
 Read:
 
-- `/Users/cecil/Code/me/wiki-workflow/wiki/INDEX.md`
-- `/Users/cecil/Code/me/wiki-workflow/wiki/SUMMARY.md`
+- `/Users/cecil/Code/me/knowledge-base/wiki/INDEX.md`
+- `/Users/cecil/Code/me/knowledge-base/wiki/SUMMARY.md`
 
 From these, build a mental map of what topics the wiki covers, what articles exist, and how they are organized. Identify which articles are most likely relevant to the user's question based on titles, tags, and the SUMMARY.
 
@@ -42,7 +42,7 @@ If fewer than 3 relevant wiki articles exist for the question, proceed to Step 3
 
 ## Step 3: Supplement from raw/ (when coverage is thin)
 
-Read `/Users/cecil/Code/me/wiki-workflow/raw/INDEX.md`.
+Read `/Users/cecil/Code/me/knowledge-base/raw/INDEX.md`.
 
 Select up to 5 raw source files whose titles or slugs are relevant to the question. Read them. Use their content to supplement the answer, and note in the Gaps section that these raw docs have not yet been compiled into wiki articles.
 
@@ -86,7 +86,7 @@ If there are no meaningful gaps, write: `_The wiki's coverage on this topic appe
 
 Generate a slug from the question: lowercase, spaces and punctuation replaced with hyphens, truncated to 60 characters. Example: "what do I know about RAG" → `what-do-i-know-about-rag`.
 
-Write the answer to `/Users/cecil/Code/me/wiki-workflow/wiki/qa/<slug>.md` with this frontmatter:
+Write the answer to `/Users/cecil/Code/me/knowledge-base/wiki/qa/<slug>.md` with this frontmatter:
 
 ```
 ---
@@ -106,7 +106,7 @@ If a Q&A file with the same slug already exists, overwrite it — the new answer
 
 ## Step 7: Update wiki/INDEX.md
 
-Read `/Users/cecil/Code/me/wiki-workflow/wiki/INDEX.md`. Locate a `## Q&A` section. If no such section exists, append one at the end of the file.
+Read `/Users/cecil/Code/me/knowledge-base/wiki/INDEX.md`. Locate a `## Q&A` section. If no such section exists, append one at the end of the file.
 
 Append one line under `## Q&A`:
 

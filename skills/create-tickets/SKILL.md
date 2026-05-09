@@ -18,7 +18,7 @@ Three lists produced by `filter-articles`:
 
 ## Deduplication
 
-Before creating any ticket, search the Linear Wiki project (team CCTD) for an existing ticket whose description contains the article URL. If a match is found, skip that article and record it in the skipped-duplicates list. Do this check for both auto-ticket and threshold articles (check threshold articles before prompting the user — no point asking about a duplicate).
+Before creating any ticket, search the Linear Wiki project (team CC) for an existing ticket whose description contains the article URL. If a match is found, skip that article and record it in the skipped-duplicates list. Do this check for both auto-ticket and threshold articles (check threshold articles before prompting the user — no point asking about a duplicate).
 
 Use the Linear MCP tools to search existing tickets.
 
@@ -48,7 +48,7 @@ Do nothing. Do not mention them.
 Every created ticket must follow this exact format:
 
 - **Title**: article title, truncated to 80 characters if longer
-- **Team**: CCTD
+- **Team**: CC
 - **Project**: Wiki
 - **Labels**: `ai-not-read` and `human-not-read`
 - **Description**:

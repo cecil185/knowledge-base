@@ -28,7 +28,7 @@ Run 3–5 WebSearch queries covering different angles of the topic (e.g. introdu
 
 ## Step 2: Deduplicate
 
-Read `/Users/cecil/Code/me/wiki-workflow/raw/INDEX.md`. If the file does not exist, treat the existing index as empty.
+Read `/Users/cecil/Code/me/knowledge-base/raw/INDEX.md`. If the file does not exist, treat the existing index as empty.
 
 For each fetched source URL, normalise before comparing:
 - Strip trailing slashes
@@ -61,11 +61,11 @@ Leave `tags` as an empty list `[]`. Tags are populated by later skills.
 
 ## Step 5: Check for a Linear ticket
 
-Search the Linear Wiki project (team CCTD) for an open ticket whose description contains the source URL. If found, record the ticket ID (e.g. `CCTD-42`). If not found, use `"none"`.
+Search the Linear Wiki project (team CC) for an open ticket whose description contains the source URL. If found, record the ticket ID (e.g. `CC-42`). If not found, use `"none"`.
 
 ## Step 6: Write file(s)
 
-Write to `/Users/cecil/Code/me/wiki-workflow/raw/<slug>.md` (or `<slug>-part-N.md` for splits).
+Write to `/Users/cecil/Code/me/knowledge-base/raw/<slug>.md` (or `<slug>-part-N.md` for splits).
 
 Frontmatter followed immediately by the extracted article body:
 
@@ -86,7 +86,7 @@ For split files, add `part: N` and `total_parts: N` fields to the frontmatter.
 
 ## Step 7: Update raw/INDEX.md
 
-Append one line per saved file to `/Users/cecil/Code/me/wiki-workflow/raw/INDEX.md`. Create the file with a `# Raw Article Index` header if it does not exist.
+Append one line per saved file to `/Users/cecil/Code/me/knowledge-base/raw/INDEX.md`. Create the file with a `# Raw Article Index` header if it does not exist.
 
 Format:
 

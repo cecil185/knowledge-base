@@ -1,10 +1,8 @@
-# wiki-workflow
-
 Personal learning system. Discovers, filters, and synthesizes tech articles into a queryable knowledge base — with Linear for tracking and a local wiki for synthesis.
 
 ## Linear
 
-Team key: **CCTD** — [Tech Digest](https://linear.app/cecils-projects/team/CCTD/)
+Team key: **CC** — [Knowledge Base](https://linear.app/cecils-projects/team/CC/)
 
 - **Wiki project** — one ticket per article worth reading; comments hold the AI summary
 - **Work project** — tickets to build and improve this system itself
@@ -14,12 +12,15 @@ Article ticket tags: `ai-not-read`, `ai-read`, `human-not-read`, `human-read`
 ## Directory structure
 
 ```
-wiki-workflow/
-  goal.md        — current learning goal (managed by /goal-refine)
-  sources.md     — blog sources list (managed by /refine-sources)
-  raw/           — raw fetched article content (one .md per article)
-  wiki/          — compiled knowledge base (concepts, tools, synthesis)
-  skills/        — all skill definitions
+knowledge-base/
+  goal.md          — current learning goal (managed by /goal-refine)
+  sources.md       — blog sources list (managed by /refine-sources)
+  about-me.md      — personal context for relevance filtering
+  raw/             — raw fetched article content (one .md per article)
+  wiki/            — compiled knowledge base (concepts, tools, synthesis)
+  skills/          — skill definitions (one subdirectory per skill)
+  scripts/         — utility shell scripts
+  .claude/         — Claude Code settings
 ```
 
 Deduplication is handled by Linear (Wiki project) — no local log file.
