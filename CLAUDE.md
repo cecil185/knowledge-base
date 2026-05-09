@@ -1,36 +1,61 @@
 # wiki-workflow
 
-Personal learning system. Captures, evaluates, and synthesizes tech articles across sessions.
+Personal learning system. Discovers, filters, and synthesizes tech articles into a queryable knowledge base — with Linear for tracking and a local wiki for synthesis.
 
 ## Linear
 
-This project uses **Linear** for issue tracking. Issues are in the [Tech Digest](https://linear.app/cecils-projects/team/CCTD/) team (team key: CCTD).
+Team key: **CCTD** — [Tech Digest](https://linear.app/cecils-projects/team/CCTD/)
 
-Use Linear project 'Work' for tickets to create this system.
-Use Linear project 'Wiki' for high-value articles.
+- **Wiki project** — one ticket per article worth reading; comments hold the AI summary
+- **Work project** — tickets to build and improve this system itself
 
-## Purpose
+Article ticket tags: `ai-not-read`, `ai-read`, `human-not-read`, `human-read`
 
-Filter the tech firehose. Every article evaluated gets logged. Patterns surface over time. High-value finds become action.
-
-## Structure
+## Directory structure
 
 ```
-skills/
-  article-critique/   — rates and summarizes a tech article; appends to learning log
-  tech-digest/        — finds new articles from HN + curated blogs; dedupes against log; posts to Slack
+wiki-workflow/
+  goal.md        — current learning goal (managed by /goal-refine)
+  sources.md     — blog sources list (managed by /refine-sources)
+  raw/           — raw fetched article content (one .md per article)
+  wiki/          — compiled knowledge base (concepts, tools, synthesis)
+  skills/        — all skill definitions
 ```
 
-## Learning Log
+Deduplication is handled by Linear (Wiki project) — no local log file.
 
-All evaluated articles are stored in `~/.claude/learning/log.md` — one line per article with date, rating, and action status. This is the cross-session memory store. Skills read it to avoid re-evaluating seen articles.
+All data lives inside this repo. Nothing is stored outside it.
 
-## Workflow
+## Skills
 
-- `/article-critique <url>` — evaluate a specific article
-- `/tech-digest` — pull latest articles, skip already-seen ones, post digest to Slack
+```
+/digest            — end-to-end: discover → filter → ticket → read → summarize → wiki
+/goal-refine       — create or refine goal.md through structured interview
+/refine-sources    — review and update the blog sources list in sources.md
+/article-critique  — on-demand deep review of a single article
+/wiki:ingest       — save a URL or topic to raw/; deduplicates against raw/INDEX.md
+/wiki:qa           — query the local knowledge base
+/wiki:compile      — synthesize raw/ docs into wiki/ concepts and tool articles
+/wiki:lint         — audit wiki for gaps and broken links
+```
 
-## Notes
+## /digest flow
 
-- Skills live here; `~/.claude/settings.json` includes this repo in `additionalDirectories` so they're available globally
-- Learning log lives in `~/.claude/learning/log.md` (outside this repo, persists independently)
+1. Read `goal.md` and `sources.md`
+2. Fetch candidates from Hacker News + sources list
+3. Filter into 3 buckets:
+   - **Drop** — low quality or low relevance to goal
+   - **Auto-ticket** — clear match; Linear ticket created automatically
+   - **Threshold** — 1–2 sentence summary shown to Cecil; ticket created if approved
+4. Deduplicate: skip any URL already in Linear (Wiki project)
+5. For each new ticket: read article in full → comment with TLDR / Goal relation / How to apply
+6. Tags: `ai-not-read` → `ai-read` after full read; `human-not-read` set at creation
+7. `wiki:ingest` saves article to `raw/<slug>.md` and appends to `raw/INDEX.md`; `wiki:compile` synthesizes into `wiki/`
+
+## Goal
+
+`goal.md` has four fields: **What**, **Why**, **Horizon**, **Success looks like** — plus derived reading intent and relevance signals. Run `/goal-refine` to update it.
+
+## Sources
+
+`sources.md` lists blog sources beyond HN. HN is always included. Run `/refine-sources` to prune or add sources.

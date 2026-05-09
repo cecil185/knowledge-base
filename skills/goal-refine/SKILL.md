@@ -1,118 +1,66 @@
 ---
 name: goal-refine
-description: Create or refine Cecil's single learning goal through relentless Socratic questioning. If no goal exists, builds it from scratch. If a goal exists, examines each field's assumptions and checks they're still true. Use when asked to "set my goal", "update my goal", "refine my goal", "review my goal", or "what's my goal".
+description: Create or refine the user's single learning goal through Socratic questioning. Use when asked to "set my goal", "update my goal", "refine my goal", or "what's my goal".
+model: claude-opus-4-6
+effort: medium
 ---
-
 # Goal Refine
 
-Create or refine Cecil's single learning goal. The goal lives in `./goal.md` and is the source of truth for all relevance-rating skills.
+Create or sharpen the single learning goal that drives all filtering in this system. The goal lives in `./goal.md` and is the source of truth for every skill that scores or filters articles.
 
-This skill conducts a structured interview — relentless, one question at a time — then shows a draft for confirmation before writing.
+## Steps
 
----
+### 1. Read ./goal.md
 
-## Mode detection
+Read `./goal.md` from the repo root.
 
-Read `./goal.md`.
+- **File missing or empty** → Create mode: build a goal from scratch using the interview below.
+- **File exists with content** → Refine mode: treat the existing 4 fields as first drafts; challenge each one's assumptions using the same interview below.
 
-- **File missing or empty → Create mode.** No goal exists. Build one from scratch.
-- **File exists with content → Refine mode.** A goal exists. Examine its four fields and challenge their assumptions.
+### 2. Interview
 
----
-
-## Goal structure
-
-A goal has exactly four fields. Every question in the interview targets one of these:
+Conduct a Socratic interview to produce four sharp fields:
 
 | Field | What it captures |
-|---|---|
-| **What** | The concrete outcome — one sentence, specific enough to know when it's done |
-| **Why** | The real motivation — not the surface reason, the actual driver |
-| **Horizon** | A specific date or milestone — not "eventually" or "soon" |
-| **Success looks like** | How you'd know you hit it, in observable, external terms |
+|-------|-----------------|
+| **What** | Concrete outcome — not a topic, a deliverable or capability |
+| **Why** | Real motivation — the actual driver, not the surface reason |
+| **Horizon** | Specific date or named milestone — not "soon" or "eventually" |
+| **Success looks like** | Observable, external signal — something Cecil could point to |
 
----
+**Interview rules — follow these exactly:**
 
-## Interview rules
+1. Ask one question at a time. Never bundle two questions.
+2. Maximum 10 questions total. At question 10, synthesize from what you have, even if fields are imperfect.
+3. Every question must include a recommended concrete answer in the form "e.g. — [specific example]". This is mandatory, not optional.
+4. Drill on vague answers. If the response contains hedges ("maybe", "eventually", "kind of"), undefined terms, or scope creep, do not move on. Ask again with a sharper framing.
+5. Confront contradictions immediately. If the stated Why conflicts with the What, say so directly and ask which one to keep.
+6. No softening, no validation, no encouragement. Silence means forward motion; if you're done ask the next question.
 
-These rules govern every question you ask, in both modes:
+**Field order:** What → Why → Horizon → Success looks like. You may revisit an earlier field if a later answer reveals it was imprecise — but count the revisit toward the 10-question limit.
 
-1. **One question at a time.** Never ask two questions in one message. Wait for the answer before continuing.
+### 3. Derive supporting sections
 
-2. **Max 10 questions total** across the entire interview. Track the count internally. When you reach 10, synthesize from what you have — do not ask an 11th.
+After the interview is complete, derive the following sections automatically from the 4 fields. Do not re-interview or ask for input on these — derive them from what was said.
 
-3. **Drill until the answer is sharp.** After each answer, judge whether it is concrete and unambiguous. If it is vague — contains undefined terms, hedges ("maybe", "sort of", "eventually"), is contradicted by another answer, or lacks specificity — ask a follow-up on the same field before moving on. Move to the next field only when the current one is resolved.
+**Reading intent** (1–2 sentences): What Cecil is scanning for when he opens an article. Written in first person. Grounded in the What and Why.
 
-4. **Judge vagueness by meaning, not by word count or trigger words.** "Ship something" is vague. "A working MCP server that 3 people use by September" is not. Use judgment.
+**High-relevance article** (4–6 bullets): What a directly useful article looks like. Each bullet is specific enough to apply as a filter. Avoid "could be" and "might" — these are yes/no signals.
 
-5. **Provide your recommended answer with every question.** Frame it as a concrete option the user can accept, reject, or redirect. This is not optional — recommendations keep the interview moving and surface implicit assumptions.
+**Low-relevance article** (3–4 bullets): What doesn't move the needle toward this goal. Be specific — name the patterns that waste time, not just the inverse of the high-relevance list.
 
-6. **Confront contradictions immediately.** If a new answer conflicts with a prior one, name the conflict directly and ask which is true. Do not paper over it.
+### 4. Show draft and confirm
 
-7. **No softening.** Do not hedge, validate, or encourage. Ask the question. If the answer is still vague, say so plainly and ask again.
+Display the full proposed `goal.md` in a code block. Ask one question: "Write this to goal.md? (yes / revise [what])"
 
----
+- If yes: write the file.
+- If revise: incorporate the revision and show the updated draft. Confirm once more before writing.
 
-## Create mode
+Do not write the file without explicit confirmation.
 
-No goal exists. Build one by interviewing across all four fields in order: What → Why → Horizon → Success looks like.
+### 5. Write ./goal.md
 
-Start with:
-> "No goal exists yet. Let's build one. I'll ask up to 10 questions — one at a time — until we have something sharp.
->
-> **Q1: What is the concrete outcome you're working toward?**
-> (Not an area of interest — an outcome. Something done, shipped, or achieved.)
->
-> My recommendation: [derive a plausible specific outcome from any context available, or state one explicitly for the user to react to]"
-
-Then interview until all four fields are resolved or you hit 10 questions.
-
----
-
-## Refine mode
-
-A goal exists. Read all four fields from `goal.md`. Your job is to challenge each field's assumptions — not to accept them as still true.
-
-Start with:
-> "Your current goal:
->
-> - **What:** [current What]
-> - **Why:** [current Why]
-> - **Horizon:** [current Horizon]
-> - **Success looks like:** [current Success]
->
-> I'm going to examine each of these. If an assumption has rotted, we'll update it. One question at a time."
-
-Then interrogate each field in order. For each field, ask: is this still true? Has the underlying assumption changed? Examples of the probing questions to generate (do not use these verbatim — derive the right question from the current content):
-
-- **What:** "You said the outcome is X. Is X still the thing, or has something happened that makes Y more accurate now?"
-- **Why:** "The stated motivation was X. Is that still the real driver, or is there something else actually pulling you toward this now?"
-- **Horizon:** "The horizon was X. Given today's date ([today's date]), is that still realistic? What would need to be true for you to hit it?"
-- **Success looks like:** "You defined success as X. If you achieved that exactly, would you feel done — or would you immediately move the goalposts? What's the real signal?"
-
-Drill on any field where the answer reveals the assumption has shifted or was never quite right. Move on only when the updated field is sharp.
-
----
-
-## After the interview
-
-Once all four fields are resolved (or you've reached 10 questions), synthesize the full `goal.md` draft.
-
-The derived sections — reading intent and relevance signals — are **regenerated automatically** from the four core fields. Do not re-interview for these; derive them.
-
-Show the draft in full:
-
-> "Here's the proposed `goal.md`. Confirm to write, or tell me what to change.
->
-> ---
-> [full draft]
-> ---"
-
-Only write the file after explicit confirmation. On confirmation, write to `./goal.md`, overwriting the previous content entirely.
-
----
-
-## goal.md format
+Write using exactly this format:
 
 ```markdown
 # Cecil's Learning Goal
@@ -123,35 +71,35 @@ _Last updated: YYYY-MM-DD._
 
 ## Goal
 
-**What:** <one sentence — the concrete outcome>
-
-**Why:** <one sentence — the real motivation, not the surface reason>
-
+**What:** <one sentence>
+**Why:** <one sentence — real driver, not surface reason>
 **Horizon:** <specific date or milestone>
-
-**Success looks like:** <observable, external signal that the goal is done>
+**Success looks like:** <observable, external signal>
 
 ---
 
 ## Reading intent
 
-<1–2 sentences derived from Why and What — what Cecil is scanning for when he reads>
+<1-2 sentences>
 
 ---
 
 ## High-relevance article
 
-<3–5 bullets derived from What and Success — what a directly useful article looks like>
+- <bullet>
+- <bullet>
+- <bullet>
+- <bullet>
 
 ## Low-relevance article
 
-<3–4 bullets derived from the above — what doesn't move the needle>
+- <bullet>
+- <bullet>
+- <bullet>
 ```
 
----
+Use today's date for `Last updated`. Do not add sections beyond what the format specifies.
 
 ## Tone
 
-Interrogate, don't coach. The skill's job is to surface what's vague or untrue, not to affirm. A refined goal that's still fuzzy is a failed refinement. If the user accepts a vague answer, push back once. If they push back again, accept it and note the ambiguity in the draft.
-
-Never ask two questions at once. Never skip the recommended answer. Never move on from a vague field without naming the vagueness explicitly.
+Interrogate, don't coach. A goal that's still fuzzy after 10 questions is a failed refinement — synthesize the sharpest version possible from what was said and name the remaining ambiguity in a one-line note at the bottom of the draft.

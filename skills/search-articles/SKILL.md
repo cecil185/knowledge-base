@@ -1,44 +1,79 @@
 ---
 name: search-articles
-description: Search Hacker News and curated tech blogs for recent articles on agentic AI and data engineering. Returns a raw list of candidate URLs with titles and dates. Used as the first step in the tech-digest workflow.
+description: Find candidate articles from the past 4 days from HN and curated blog sources; first step of /digest
 model: claude-opus-4-6
 effort: medium
 ---
+# search-articles
 
-# Search for Recent Tech Articles
+Find candidate articles published in the last 4 days from Hacker News and all sources listed in `sources.md`. Produce a flat deduplicated list ready for `filter-articles` to classify.
 
-Find candidate articles from the past 4 days across Hacker News and curated blogs.
+## Steps
 
----
+### 1. Calculate the cutoff
 
-## Step 1 - Search Hacker News
+Set CUTOFF to today minus 4 days.
 
-Calculate CUTOFF = today minus 4 days in Unix epoch seconds.
-Use WebFetch to call the HN Algolia API in parallel:
+- Unix epoch seconds form (for HN API): `CUTOFF_EPOCH`
+- ISO date form (for web search): `CUTOFF_DATE` in `YYYY-MM-DD` format
 
-- https://hn.algolia.com/api/v1/search?query=agentic+AI+agent+framework&tags=story&numericFilters=created_at_i>CUTOFF&hitsPerPage=20
-- https://hn.algolia.com/api/v1/search?query=data+engineering+AI+Kafka+Spark&tags=story&numericFilters=created_at_i>CUTOFF&hitsPerPage=20
+### 2. Query HN Algolia API
 
-Also run WebSearch queries in parallel:
-- site:news.ycombinator.com Show HN agent AI tools
-- site:news.ycombinator.com Show HN data engineering AI
+Run both searches **in parallel**:
 
-## Step 2 - Search curated blogs
-
-Compute CUTOFF_DATE = today minus 4 days (YYYY-MM-DD format).
-Run these WebSearch queries in parallel using after:CUTOFF_DATE operator:
-
-- site:simonwillison.net after:CUTOFF_DATE
-- site:databricks.com/blog after:CUTOFF_DATE AI agent MCP
-- site:confluent.io/blog after:CUTOFF_DATE AI agent data
-- site:towardsdatascience.com after:CUTOFF_DATE release tool launch
-- site:dataengineeringweekly.com after:CUTOFF_DATE
-
-## Output
-
-Return a deduplicated list of candidate articles as:
 ```
-- [Title] | [URL] | [Source] | [Date if known]
+https://hn.algolia.com/api/v1/search?query=agentic+AI+agent+framework&tags=story&numericFilters=created_at_i>CUTOFF_EPOCH&hitsPerPage=20
+
+https://hn.algolia.com/api/v1/search?query=data+engineering+AI&tags=story&numericFilters=created_at_i>CUTOFF_EPOCH&hitsPerPage=20
 ```
 
-Include all results — do not filter yet. Aim for 20-30 candidates.
+From each hit, extract:
+- `title`
+- `url` (use `story_url` if present, otherwise the HN item URL `https://news.ycombinator.com/item?id=<objectID>`)
+- `source`: `"HN"`
+- `snippet`: first sentence of the HN post text if present, otherwise empty string
+- `date`: `created_at` field formatted as `YYYY-MM-DD`
+
+### 3. Query curated blog sources
+
+Read `sources.md` from the repo root to get the list of blog sources.
+
+For each source, run a `WebSearch` with the query:
+
+```
+site:<source-domain> after:<CUTOFF_DATE>
+```
+
+Run all source searches **in parallel**.
+
+From each result, extract:
+- `title`
+- `url`
+- `source`: the blog domain
+- `snippet`: the search result description/excerpt
+- `date`: date from search result metadata if available, otherwise leave blank
+
+### 4. Deduplicate
+
+Normalise all URLs before comparing:
+- Strip trailing slashes
+- Strip `utm_*` query parameters
+- Treat `http://` and `https://` variants as identical
+
+Keep only the first occurrence of each URL across all result sets.
+
+### 5. Output
+
+Emit a flat markdown list. Aim for 20–40 candidates. Do not filter or rank at this stage — include everything that passed deduplication.
+
+Format each candidate as:
+
+```
+- **<title>**
+  URL: <url>
+  Source: <source>
+  Date: <date or "unknown">
+  Snippet: <snippet or "none">
+```
+
+If fewer than 10 candidates are found, note that the search returned limited results — do not pad with low-confidence items.

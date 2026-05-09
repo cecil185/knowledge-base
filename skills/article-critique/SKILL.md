@@ -1,205 +1,75 @@
 ---
 name: article-critique
-description: Read a tech article, summarize it, and self-evaluate its value to Cecil's data platform work — returns a rating and an applicability report, not questions for him to answer. Use when given an article URL, pasted article text, or asked to "summarize this article", "is this worth reading", "what should I take from this", "rate this article", "how does this apply to my work", or any read-and-evaluate task on tech writing (blog posts, papers, vendor docs, conference talks, newsletters).
+description: On-demand deep review of a single article URL. Rates it, creates a Linear ticket if worth it, reads in full, and posts a summary comment.
+model: claude-opus-4-6
+effort: medium
 ---
-
 # Article Critique
 
-Read the article, summarize it, and **answer the critical questions yourself** against Cecil's stack — don't ask him. Output is an evaluation report a caller (Cecil or another skill/agent) can act on without follow-up.
+On-demand review of a single article. Use when given a URL directly — not through `/digest`. Produces a scored rating report, creates a Linear ticket for qualifying articles, and runs a full read on anything that clears the bar.
 
-The point: filter the firehose. Tell Cecil whether it's worth his attention, what to extract, and what (if anything) it should change in his world — with a defensible rating.
+## Steps
 
-After producing the report, **always append a one-line entry to the learning log** at `~/.claude/learning/log.md` (see Log Entry section below).
+### 1. Read goal.md
 
----
+Read `goal.md` from the repo root. Use the What / Why / Horizon / Success fields and the high/low relevance signals to calibrate all scoring decisions below.
 
-## Cecil's context (use this to ground every evaluation)
+### 2. Fetch the article
 
-**Role:** Senior data engineer at Teamworks. Practitioner; owns ingestion platform end-to-end.
+Fetch the full article content via WebFetch using the provided URL. If the fetch fails, report the error and stop.
 
-**Stack he actually runs:**
-- **Languages:** Python (primary), some PySpark, Terraform HCL, YAML (Helm/Argo/CI)
-- **Compute/orchestration:** Airflow on MWAA, Argo CD (GitOps), EKS (`datalake-stg`, `datalake-latest`)
-- **Data plane:** SQS → Python processors → Avro → Kafka (MSK) → Onehouse → S3 lake → PySpark/Hudi calc → reverse ETL to Postgres
-- **Storage/format:** S3, Hudi tables, Avro on the wire, Postgres for serving
-- **CI/CD:** GitLab CI, Helm charts, Argo CD
-- **Observability:** Datadog (logs, metrics, error triage)
-- **PM/workflow:** Linear, ADLC (refine → plan → breakdown → execute → MR), TDD, code review gates, `just` recipes, pre-commit hooks
-- **Vendors integrated:** Catapult (push/webhook), Dynamo, ForceDecks, Performance, SmartSpeed (pull/poller)
-- **AWS surface:** MSK, MWAA, Glue, SQS, S3, KMS, IAM, Valkey
-- **Scale:** mid-scale streaming/batch; sport-performance vendor data, not hyperscale
+### 3. Rate on four axes
 
-**Current themes that boost relevance:**
-- Reducing manual triage / cross-team dependency in pipeline ops
-- Datadog log quality, error classification, alert tuning
-- AI-assisted engineering (Claude Code, agents, ADLC)
-- Vendor poller reliability, schema evolution (Avro), Hudi/Onehouse mechanics
-- MWAA/Airflow ergonomics, DAG factoring
-
-**Disposition:**
-- Direct, economical, skeptical of hype
-- Reads to *change something*; pure-theory pieces score low unless they reframe a real problem
-- Time is the scarce resource — false positives ("you should read this") cost more than false negatives
-
----
-
-## Process
-
-1. **Get the article.**
-   - URL: `WebFetch`. Pasted text: use as-is. Paywall/login wall: report failure, ask for the text, do not fabricate.
-   - Multiple URLs: evaluate each separately unless explicitly asked to compare.
-
-2. **Identify the load-bearing claim.** What is the *one* thing this article actually argues? Find it under the padding.
-
-3. **Run the rating rubric** (see below). Score each axis, compute the overall rating.
-
-4. **Self-answer the critical questions** against Cecil's stack (see below). Don't pose them — answer them.
-
-5. **Emit the report** in the exact output format below. No follow-up questions, no "let me know if…".
-
-6. **Append to learning log** (see Log Entry section below).
-
-7. **Create Linear ticket if high-value** (see Linear Ticket section below).
-
----
-
-## Rating rubric
-
-Score each axis 0–3. Sum → overall rating.
+Score each axis 0–3. Max total: 12.
 
 | Axis | 0 | 1 | 2 | 3 |
-|---|---|---|---|---|
-| **Signal** (concrete claim vs. hype) | Marketing/restate of common knowledge | Mostly known, one new angle | Specific technique/tradeoff worth knowing | Genuinely non-obvious, well-argued |
-| **Stack fit** (overlap with Cecil's tech) | Different stack/scale/domain | Adjacent (e.g. Spark-heavy when he's Python-heavy) | Direct overlap on 1+ component | Direct overlap on multiple components |
-| **Actionability** (could he change something) | Pure theory/opinion | Idea-seed only | Concrete enough to ticket | Could be tried this week |
-| **Timing** (matches current themes/work) | Unrelated to current themes | Tangentially related | Hits one current theme | Hits an active priority |
+|------|---|---|---|---|
+| **Signal** | Pure hype or restatement | Weak signal, mostly summary | Concrete technique or insight | Novel, specific, reproducible insight |
+| **Goal fit** | No overlap with goal signals | Tangential overlap | Matches one high-relevance signal | Matches multiple high-relevance signals |
+| **Actionability** | Nothing Cecil could do with this | Vaguely relevant to future work | Could apply within a month | Could change something Cecil does this week |
+| **Timing** | Unrelated to current horizon | Adjacent to current priorities | Supports a current priority | Directly addresses a current horizon goal |
 
-**Overall rating** (sum, max 12):
-- **10–12 → Read fully. High value.**
-- **7–9 → Skim. Extract specific section(s).**
-- **4–6 → Skip unless killing time. One-line takeaway in report.**
-- **0–3 → Skip. Note why so future-Cecil doesn't reopen it.**
+Do not round up. If the article is mostly marketing copy dressed as a tutorial, Signal is 0 or 1 regardless of topic.
 
-Always show the per-axis scores so the rating is auditable.
+### 4. Classify total score
 
----
+| Score | Label |
+|-------|-------|
+| 10–12 | High value |
+| 7–9   | Worth reading |
+| 4–6   | Marginal |
+| 0–3   | Skip |
 
-## Self-answered critical questions
+### 5. Output rating report
 
-For every article, answer these inline (in the **Applicability** section). Be honest — "no" / "not applicable" is a valid, valuable answer.
-
-1. **What specifically would Cecil change if he took this seriously?** (file/system/ticket-level concrete, or "nothing").
-2. **Does the failure mode / problem they describe actually exist in his stack today?** (Use stack knowledge; if unknown, say so and name what would tell us.)
-3. **What's the cheapest experiment / verification to test the claim in his environment?** (or "no experiment needed; doesn't apply").
-4. **What does this displace?** (If he adopts it, what current pattern/tool/decision is it competing with?)
-5. **Counterfactual: if he ignores this for 6 months, what breaks?** (Often "nothing" — that's the honest answer for most articles.)
-
-If a question isn't applicable, say so in one clause and move on. Don't pad.
-
----
-
-## Output format
+Always output the rating report, regardless of score:
 
 ```
-# <article title or short label>
-<URL if available>
+**[Article Title]**
+[URL]
+Rating: N/12 — [High value | Worth reading | Marginal | Skip]
+- Signal: N/3 — one clause
+- Goal fit: N/3 — one clause
+- Actionability: N/3 — one clause
+- Timing: N/3 — one clause
 
-**Rating: <N>/12 — <Read fully | Skim | Skip | Skip (low value)>**
-- Signal: <0–3> — <one-clause why>
-- Stack fit: <0–3> — <one-clause why>
-- Actionability: <0–3> — <one-clause why>
-- Timing: <0–3> — <one-clause why>
-
-**Thesis (1 sentence):** <load-bearing claim>
-
-**Summary (3–6 bullets):**
-- <bullet>
-- <bullet>
-- ...
-
-**What's actually new / non-obvious:**
-- <bullet, or "nothing — restates common practice">
-
-**Applicability to Cecil's stack:**
-1. **Would change:** <concrete change, or "nothing">
-2. **Problem exists today?** <yes/no/unknown + evidence or what would confirm>
-3. **Cheapest test:** <experiment, or "n/a">
-4. **Displaces:** <current pattern/tool, or "nothing">
-5. **Cost of ignoring:** <what breaks in 6mo, or "nothing">
-
-**Bottom line (1–2 sentences):** <does he act, file it, or drop it — and the single most valuable thing to take, if any>
+Thesis: one sentence — the actual claim under the padding.
+Bottom line: 1-2 sentences — read, skim, or drop and why.
 ```
 
-No headers beyond what's above. No closing offer to do more. The report is the deliverable.
+One clause means one clause. No hedging. If it's hype, say it's hype.
 
----
+### 6. Ticket and read (rating ≥ 7 only)
 
-## Log Entry
+If the total score is below 7, stop after the report. No ticket.
 
-After every evaluation, append one line to `~/.claude/learning/log.md`. Create the file and header if it doesn't exist.
+If the total score is 7 or higher:
 
-File header (only if creating):
-```
-# Learning Log
+1. Search the Linear Wiki project for an existing ticket whose description or title contains this exact URL. If a duplicate exists, report the existing ticket ID and stop — do not create a second ticket.
+2. Create a Linear ticket in the Wiki project:
+   - Title: article title
+   - Description: URL + one-sentence thesis
+   - Labels: `ai-not-read`, `human-not-read`
+3. Run the `read-article` skill, passing the new ticket ID and URL. It will fetch full content, write to `raw/`, post a TLDR / Goal relation / How to apply comment, and flip the label to `ai-read`.
 
-| Date | Title | URL | Rating | Action | Status |
-|------|-------|-----|--------|--------|--------|
-```
-
-Row format:
-```
-| YYYY-MM-DD | <title, max 60 chars> | <url or "pasted"> | <N>/12 | <one-clause bottom-line action, or "none"> | pending |
-```
-
-- Status is always `pending` on creation. Cecil updates it to `done` or `dropped` manually.
-- Never rewrite existing rows. Append only.
-
----
-
-## Tone
-
-Match Cecil's style: direct, economical, dry, no hedging. Call hype hype. Saying "skip — you already do this; their version is worse" is the high-value answer when true. Don't inflate ratings to seem helpful — the skill's credibility comes from honest skips.
-
-When uncertain about a stack-specific fact (e.g. "does the ForceDecks poller already retry?"), say "unknown — would need to check `<file/component>`" rather than guessing. Calling skills/agents can act on that.
-
----
-
-## Linear Ticket
-
-If the overall rating is **7 or higher**, create a Linear ticket in the **Wiki** project (team key: CCTD).
-
-Ticket fields:
-- **Title:** `[Read] <article title, max 60 chars>`
-- **Description:**
-  ```
-  **URL:** <url>
-  **Rating:** <N>/12
-  **Thesis:** <1-sentence thesis>
-
-  **Key takeaways:**
-  <3–5 bullets from the summary — concrete, actionable>
-
-  **Relevant to goal:** <which goal from ./goal.md this serves>
-
-  **What to do:** <the "Would change" answer from applicability — or "nothing actionable">
-  ```
-- **Status:** Todo
-
-If the rating is below 7, skip the ticket — don't log low-value articles to Linear.
-
----
-
-## Edge cases
-
-- **Paper / long-form (>30 min read):** Same format; summary can run to 8 bullets. Rating still on 12-point scale.
-- **Vendor blog / marketing post:** Apply extra skepticism on **Signal**. Flag if the "lesson" is actually a sales pitch in the **Bottom line**.
-- **Paywalled / fetch fails:** Emit a stub report with `Rating: n/a — fetch failed` and the failure reason. Do not fabricate. Still append to log with rating `n/a`.
-- **Pure-text input (no URL):** Treat as the article; omit the URL line. Use `"pasted"` in the log.
-- **Compare 2+ articles:** Emit each report in full, then add a final block:
-  ```
-  **Compared:**
-  - Agree on: <…>
-  - Disagree on: <…>
-  - More relevant to Cecil: <which, why>
-  ```
-- **Caller is another skill/agent:** Same output. The format is parseable by structure (headers + bold labels) — keep field names stable.
+Do not run `wiki:compile` automatically here — that is the digest pipeline's responsibility. If the user wants the wiki updated after a critique, they can run `/wiki:compile` manually.

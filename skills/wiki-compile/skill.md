@@ -1,73 +1,153 @@
 ---
 name: wiki:compile
-description: >-
-  Read all documents in raw/ and compile or incrementally update a structured
-  wiki in wiki/. Creates concept articles, tool profiles, summaries, backlinks,
-  and a master index. Use after wiki:ingest to build or refresh the wiki from
-  source material.
+description: Process new raw/ docs and update wiki/ — synthesizes concepts and tools into evergreen articles with WikiLink cross-references
 model: claude-opus-4-6
 effort: high
 ---
+# wiki:compile
 
-# Wiki Compile
+Process raw docs that have not yet been compiled into the wiki and update the structured knowledge base in `wiki/`. Called at the end of `/digest` and on-demand.
 
-Process all raw source documents and maintain a structured, interlinked wiki directory. The LLM owns all wiki content — humans rarely edit it directly.
+## Step 1: Identify uncompiled raw docs
 
-## Process
+Read `/Users/cecil/Code/me/wiki-workflow/raw/INDEX.md` to get the full list of ingested raw files.
 
-1. **Read the current state**: Read `raw/INDEX.md` and `wiki/INDEX.md` (if exists) to understand what's new since the last compile.
+Read `/Users/cecil/Code/me/wiki-workflow/wiki/INDEX.md` if it exists. If not, treat the wiki as empty.
 
-2. **Extract concepts and entities**: From all new/changed raw docs, identify:
-   - Core concepts (frameworks, patterns, algorithms, tools, architectures)
-   - People and organizations
-   - Key comparisons and tradeoffs
+Compare the two indexes to identify raw docs not yet referenced in any wiki article. A raw doc is considered compiled if its slug appears in the `sources` frontmatter of at least one wiki article. Check by scanning frontmatter of all existing files under `wiki/concepts/` and `wiki/tools/`.
 
-3. **Create or update concept articles** in `wiki/concepts/<slug>.md`:
-   ```markdown
-   ---
-   title: <Concept Name>
-   updated: <YYYY-MM-DD>
-   sources: [raw/<slug>.md, ...]
-   related: [[[Other Concept]], ...]
-   ---
-   
-   ## Summary
-   2–3 sentence definition for skimming.
-   
-   ## Details
-   Thorough explanation synthesized across all sources.
-   
-   ## Tradeoffs / When to use
-   
-   ## Key tools / implementations
-   
-   ## Sources
-   - [Title](../raw/slug.md)
-   ```
+If there are no uncompiled raw docs, report "nothing to compile — wiki is up to date" and stop.
 
-4. **Create or update tool profiles** in `wiki/tools/<slug>.md`:
-   Same structure as concepts but with: Purpose, Architecture, Strengths, Weaknesses, Comparison to alternatives.
+## Step 2: Extract structured knowledge from each raw doc
 
-5. **Add backlinks**: At the bottom of each concept/tool file, list `## Referenced by` pointing to other wiki articles that link to it.
+For each uncompiled raw doc, read the file and extract:
 
-6. **Update master index** at `wiki/INDEX.md`:
-   - Section per category (Concepts, Tools, Architectures, People)
-   - Each entry: `- [[Article Title]] — one-line hook`
-   - Keep alphabetical within sections
+- **Core concepts** — abstract ideas, patterns, or principles the article explains (e.g. "vector indexing", "backpressure", "eventual consistency")
+- **Tools and frameworks** — named software, libraries, services, or systems discussed (e.g. "Apache Kafka", "LangChain", "DuckDB")
+- **Key tradeoffs** — what the approach costs vs. what it gains; when it fits and when it does not
+- **Actionable patterns** — concrete techniques, configurations, or architectures that can be applied
 
-7. **Write a brief summary file** `wiki/SUMMARY.md`:
-   - Total article count, word count estimate
-   - Top 5 most-referenced concepts
-   - 3–5 suggested next research directions based on gaps
+Produce a structured internal note per raw doc. Do not write this to disk — carry it forward to the next steps.
 
-## Rules
+## Step 3: Create or update concept articles
 
-- Use `[[WikiLink]]` syntax for internal links (Obsidian-compatible).
-- Never delete existing wiki content — only extend or correct it.
-- If two raw sources conflict, note both views with attribution.
-- Concepts should be evergreen — no time-sensitive language.
-- Keep articles focused: one concept per file, no megadocs.
+For each distinct concept identified across all new raw docs:
+
+Generate a slug: lowercase, hyphen-separated, max 60 characters.
+
+Check whether `/Users/cecil/Code/me/wiki-workflow/wiki/concepts/<slug>.md` already exists.
+
+**If it does not exist**, create it:
+
+```
+---
+title: <Concept Name>
+updated: <YYYY-MM-DD>
+sources: [raw/<slug>.md, ...]
+related: []
+---
+## Summary
+2–3 sentences. Precise and scannable — no padding.
+
+## Details
+Thorough explanation synthesized across all sources covering this concept. Use subheadings for complex topics. Include concrete examples where they clarify.
+
+## Tradeoffs / When to use
+What this approach gains, what it costs, and the conditions under which it fits well or poorly.
+
+## Key tools / implementations
+Named tools, libraries, or systems that implement or relate to this concept. Use [[WikiLink]] syntax for any tool that has or should have a wiki/tools/ article.
+
+## Sources
+- [[raw/<slug>]] — <one-line description of what that source contributed>
+```
+
+**If it already exists**, extend it — do not replace existing content:
+- Add new sources to the `sources` frontmatter list (deduplicate)
+- Update `updated` to today's date
+- Append new information to the relevant sections under clearly marked subheadings or inline where it fits
+- Add newly identified related concepts to the `related` frontmatter list
+- Never remove or rewrite existing content unless it is factually incorrect — in that case, add a correction note inline
+
+## Step 4: Create or update tool articles
+
+For each distinct tool or framework identified across all new raw docs:
+
+Generate a slug from the tool name: lowercase, hyphen-separated, max 60 characters.
+
+Check whether `/Users/cecil/Code/me/wiki-workflow/wiki/tools/<slug>.md` already exists.
+
+**If it does not exist**, create it:
+
+```
+---
+title: <Tool Name>
+updated: <YYYY-MM-DD>
+sources: [raw/<slug>.md, ...]
+related: []
+---
+## Purpose
+One sentence. What problem does this tool solve and for whom.
+
+## How it works
+Mechanism and architecture at the level of detail needed to reason about it.
+
+## Strengths
+Bulleted list. Concrete advantages backed by the sources.
+
+## Weaknesses
+Bulleted list. Known limitations, operational costs, failure modes.
+
+## Alternatives
+Other tools in the same space. Use [[WikiLink]] for any that have wiki articles.
+
+## Sources
+- [[raw/<slug>]] — <one-line description of what that source contributed>
+```
+
+**If it already exists**, extend it using the same rules as concept articles above.
+
+## Step 5: Add WikiLink cross-references
+
+After writing all new and updated articles:
+
+- Within each article, link concept names and tool names to their wiki articles using `[[Title]]` syntax where they are mentioned.
+- At the bottom of each article (after Sources), add a `## Backlinks` section listing other wiki articles that reference this one. Derive backlinks by scanning all wiki files for mentions of this article's title or slug.
+- Update the `related` frontmatter list on each article to include slugs of closely related articles discovered during this compile run.
+
+## Step 6: Update wiki/INDEX.md
+
+Rewrite `/Users/cecil/Code/me/wiki-workflow/wiki/INDEX.md` with two sections: `## Concepts` and `## Tools`. Each entry:
+
+```
+- [[Title]] — <one-line hook: what it is and why it matters>
+```
+
+Sort each section alphabetically by title. Include all articles in `wiki/concepts/` and `wiki/tools/`, not just the ones updated in this run. Create the file if it does not exist.
+
+## Step 7: Update wiki/SUMMARY.md
+
+Rewrite `/Users/cecil/Code/me/wiki-workflow/wiki/SUMMARY.md` with:
+
+```
+# Wiki Summary
+Updated: <YYYY-MM-DD>
+
+**Articles:** <total concept count> concepts, <total tool count> tools
+
+## Most-referenced concepts
+List the 5 concepts that appear most frequently in the `sources` lists of other wiki articles or are linked via WikiLink most often.
+
+## Suggested next research directions
+3–5 directions as bullet points, inferred from gaps in the wiki — concepts mentioned but not yet having their own article, tools referenced without detail, or themes recurrent across sources that lack synthesis.
+```
+
+Create the file if it does not exist.
 
 ## Output
 
-Summary: articles created, articles updated, backlinks added, gaps identified.
+Report:
+- N concept articles created, N updated
+- N tool articles created, N updated
+- Gaps identified: concepts or tools referenced in sources but not yet having wiki articles
+- Paths of all files written
