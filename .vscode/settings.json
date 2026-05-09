@@ -1,0 +1,80 @@
+{
+  "workbench.sash.size": 20,
+
+  // ─── Light Sage ──────────────────────────────────────────────
+  // editor:   pale sage       #eef4ec  — soft green, easy on eyes
+  // sidebar:  muted fern      #dbe8d8  — one step deeper green-gray
+  // terminal: deep forest     #141f14  — dark anchor in the same family
+  "workbench.colorCustomizations": {
+    "editor.background":                    "#102a06",
+    "editor.foreground":                    "#ace6ac",
+    "editor.lineHighlightBackground":       "#474d44",
+    "editor.selectionBackground":           "#34402f",
+    "editorLineNumber.foreground":          "#517028",
+    "editorLineNumber.activeForeground":    "#cee366",
+    "sideBar.background":                   "#dbe8d8",
+    "sideBar.foreground":                   "#1e2c1e",
+    "sideBar.border":                       "#ff2200",
+    "sideBarTitle.foreground":              "#0e1c0e",
+    "terminal.background":                  "#2e382e",
+    "terminal.foreground":                  "#2af302",
+    "terminal.border":                      "#ff2200",
+    "terminal.ansiRed":                     "#e06c75",
+    "terminal.ansiGreen":                   "#98c379",
+    "terminal.ansiYellow":                  "#c8a230",
+    "terminal.ansiBlue":                    "#61afef",
+    "terminal.ansiBrightBlack":             "#507050",
+    "tab.activeBackground":                 "#eef4ec",
+    "tab.inactiveBackground":               "#dbe8d8",
+    "tab.activeForeground":                 "#1e2c1e",
+    "tab.inactiveForeground":               "#507050",
+    "tab.activeBorderTop":                  "#3a7a38",
+    "tab.border":                           "#ff2200",
+    "editorGroupHeader.tabsBorder":         "#ff2200",
+    "editorGroup.border":                   "#ff2200",
+    "statusBar.background":                 "#141f14",
+    "statusBar.foreground":                 "#98c890",
+    "statusBar.border":                     "#ff2200",
+    "panel.background":                     "#e4ede0",
+    "panel.border":                         "#ff2200"
+  }
+
+  // ─── Dark ────────────────────────────────────────────────────
+  // editor:   mid dark gray  #1e1e1e  — sweet spot, avoids halation of pure black
+  // sidebar:  deep dark      #141414  — distinctly darker zone
+  // terminal: charcoal       #272727  — distinctly lighter than sidebar, own zone
+//   "workbench.colorCustomizations": {
+//     "editor.background":                    "#300000",
+//     "editor.foreground":                    "#d4d0c8",
+//     "editor.lineHighlightBackground":       "#262626",
+//     "editor.selectionBackground":           "#3a4a5a",
+//     "editorLineNumber.foreground":          "#585450",
+//     "editorLineNumber.activeForeground":    "#a8a49c",
+//     "sideBar.background":                   "#141414",
+//     "sideBar.foreground":                   "#c0bcb4",
+//     "sideBar.border":                       "#ff2200",
+//     "sideBarTitle.foreground":              "#d0ccc4",
+//     "terminal.background":                  "#272727",
+//     "terminal.foreground":                  "#c8c4bc",
+//     "terminal.border":                      "#ff2200",
+//     "terminal.ansiRed":                     "#e06c75",
+//     "terminal.ansiGreen":                   "#98c379",
+//     "terminal.ansiYellow":                  "#e5c07b",
+//     "terminal.ansiBlue":                    "#61afef",
+//     "terminal.ansiBrightBlack":             "#7a7870",
+//     "tab.activeBackground":                 "#1e1e1e",
+//     "tab.inactiveBackground":               "#141414",
+//     "tab.activeForeground":                 "#d4d0c8",
+//     "tab.inactiveForeground":               "#787470",
+//     "tab.activeBorderTop":                  "#61afef",
+//     "tab.border":                           "#ff2200",
+//     "editorGroupHeader.tabsBorder":         "#ff2200",
+//     "editorGroup.border":                   "#ff2200",
+//     "statusBar.background":                 "#0e0e0e",
+//     "statusBar.foreground":                 "#a0b8c8",
+//     "statusBar.border":                     "#ff2200",
+//     "panel.background":                     "#1a1a1a",
+//     "panel.border":                         "#ff2200"
+//   }
+
+}
