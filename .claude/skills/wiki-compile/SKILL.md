@@ -6,7 +6,7 @@ effort: high
 ---
 # wiki:compile
 
-Process raw docs that have not yet been compiled into the wiki and update the structured knowledge base in `wiki/`. Called at the end of `/digest` and on-demand.
+Synthesize all raw docs into the wiki knowledge base. Called at the end of `/digest` and on-demand. Safe to re-run — existing articles are extended, not replaced.
 
 ## Active project
 
@@ -14,15 +14,9 @@ Determine the active project by reading `CLAUDE.md` from the repo root. Find the
 
 If called with a project argument (e.g. `/wiki:compile --project applied-ai`), use that slug instead.
 
-## Step 1: Identify uncompiled raw docs
+## Step 1: Load raw docs
 
-Read `<PROJECT_DIR>/raw/INDEX.md` to get the full list of ingested raw files.
-
-Read `<PROJECT_DIR>/wiki/INDEX.md` if it exists. If not, treat the wiki as empty.
-
-Compare the two indexes to identify raw docs not yet referenced in any wiki article. A raw doc is considered compiled if its slug appears in the `sources` frontmatter of at least one wiki article. Check by scanning frontmatter of all existing files under `<PROJECT_DIR>/wiki/concepts/` and `<PROJECT_DIR>/wiki/tools/`.
-
-If there are no uncompiled raw docs, report "nothing to compile — wiki is up to date" and stop.
+List all `.md` files under `<PROJECT_DIR>/raw/`. If none exist, report "no raw docs found" and stop.
 
 ## Step 2: Extract structured knowledge from each raw doc
 

@@ -9,19 +9,6 @@ Team key: **CC** — [Knowledge Base](https://linear.app/cecils-projects/team/CC
 
 Article ticket tags: `ai-not-read`, `ai-read`, `human-not-read`, `human-read`
 
-## Projects
-
-Each learning project lives at `projects/<slug>/` and has its own goal, sources, raw articles, wiki, and Linear project.
-
-| Slug | Name | Linear Project |
-|------|------|----------------|
-| data-ai-engineering | Data AI Engineering | Data AI Engineering |
-| applied-ai | Applied AI | Applied AI |
-
-**Default project:** `data-ai-engineering`
-
-To switch the default, edit the **Default project** line above. To target a specific project on a single command, pass the slug as an argument (e.g. `/digest applied-ai`).
-
 ## Directory structure
 
 ```

@@ -1,36 +1,35 @@
-# Cecil's Learning Goals
+# Cecil's Learning Goal
 
-_Last updated: 2026-05-09. Edit this file directly to update goals._
+_Last updated: 2026-05-10._
 
 ---
 
-## Primary goals
+## Goal
 
-- **Level up with AI/agents** — get better at building with LLMs, Claude Code, MCP servers, and agentic workflows; not just using them, but understanding how to ship real things with them in my day job as a data-engineer.
+**What:** Deliver production-grade software at work without reading every line of code — with end-to-end tests, guardrails, and safe sandboxes that make the accelerated pace safe.
+**Why:** Get the 9-to-5 done in 3 hours a day.
+**Horizon:** (not set)
+**Success looks like:** All tickets completed, output quality indistinguishable from before.
 
-## Be advanced user of AI as a software engineer
-
-## Blind spots to fix
-
-- **AI product / LLM internals** — how models actually work, fine-tuning, evals, prompt engineering depth; less "use the API" and more "understand the thing"
+---
 
 ## Reading intent
 
-**Stay aware of the industry.** Know what's happening even if not immediately actionable. Patterns and awareness compound; this is horizon-scanning, not just ticket-feeding.
+I'm scanning for techniques, tools, and workflows that let me ship faster without accumulating risk — specifically AI-assisted coding, test automation, and agentic guardrails I can apply directly in my data engineering work.
 
 ---
 
-## What a high-relevance article looks like
+## High-relevance article
 
-- Teaches something about building *with* LLMs (agents, tooling, MCP, orchestration)
-- Reveals LLM internals that change how I'd use or prompt models
-- Shows someone shipping a side project with AI, especially the non-obvious parts
-- Surfaces a new tool or SDK that could accelerate agent/product work
-- Industry signal that's early enough to act on (not "here's what everyone already knows")
+- Demonstrates AI-assisted coding in a real production codebase (not toy examples)
+- Covers automated testing strategies for AI-generated code — e2e, contract, or property-based tests
+- Shows how to build or configure guardrails, sandboxes, or review gates in an agentic workflow
+- Introduces a tool or workflow that measurably reduces the human-review burden on code changes
+- Case study of an engineer shipping significantly more with the same or fewer hours
 
-## What a low-relevance article looks like
+## Low-relevance article
 
-- Pure data engineering ops with no AI angle (fine at work; low personal-goal value)
-- Generic "AI will change everything" trend pieces — no concrete technique or tool
-- Deep-dive on tech I don't touch and wouldn't build a side project with
-- Beginner tutorials on tools I already use competently
+- AI trend pieces with no concrete technique or tool to adopt
+- Pure data engineering ops content with no AI-assisted workflow angle
+- Beginner-level LLM tutorials covering APIs or concepts I already use
+- Research papers on model internals with no near-term application to coding workflows

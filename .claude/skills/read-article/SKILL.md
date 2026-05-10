@@ -52,7 +52,7 @@ Post the following comment to the Linear ticket. Follow this format exactly — 
 1-2 sentences. Direct connection to goal.md — or "not directly relevant" if the connection is thin.
 
 **How to apply it**
-Concrete next step or experiment Cecil could run. If nothing actionable: "No direct action — awareness only."
+Concrete techniques, configurations, or architectures that can be applied. If nothing actionable: "No direct action — awareness only."
 ```
 
 ## Step 4: Update labels
@@ -65,27 +65,15 @@ Using the Linear MCP tools:
 
 ## Step 5: Save raw content
 
-Generate a slug from the article title: lowercase, spaces and punctuation replaced with hyphens, truncated to 60 characters.
-
-Write the file to `<PROJECT_DIR>/raw/<slug>.md` with this frontmatter followed by the full article body:
-
-```
----
-title: <article title>
-url: <article URL>
-fetched: <YYYY-MM-DD>
-linear_ticket: <ticket ID>
-tags: []
----
-
-<full article body>
-```
-
-Then append one line to `<PROJECT_DIR>/raw/INDEX.md` (create the file with a `# Raw Article Index` header if it does not exist):
-
-```
-- [<title>](<slug>.md) — <ticket ID> — <YYYY-MM-DD>
-```
+Run the `save-article-raw` skill with:
+- `title` — article title (extracted from page)
+- `url` — article URL
+- `body` — full extracted article body
+- `project_dir` — `PROJECT_DIR`
+- `linear_ticket` — ticket ID
+- `fetched` — today's date
+- `type` — classify as `article`, `paper`, `repo`, or `docs`
+- `tags` — `[]`
 
 ## Output
 

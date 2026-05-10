@@ -22,13 +22,13 @@ Three lists produced by `filter-articles`:
 
 ## Deduplication
 
-Before creating any ticket, search the active Linear project (team CC, project `LINEAR_PROJECT`) for an existing ticket whose description contains the article URL. If a match is found, skip that article and record it in the skipped-duplicates list. Do this check for both auto-ticket and threshold articles (check threshold articles before prompting the user — no point asking about a duplicate).
+Before creating any ticket, run the `check-duplicate` skill for each article URL, passing `LINEAR_PROJECT` and `PROJECT_DIR`. If `linear_ticket` is not null, the article already has a ticket — skip it and record it in the skipped-duplicates list.
 
-Use the Linear MCP tools to search existing tickets.
+Do this check for threshold articles before prompting the user — no point asking about a duplicate.
 
 ## Auto-ticket articles
 
-For each article in the auto-ticket list that is not a duplicate: create a Linear ticket immediately without asking the user.
+For each article in the auto-ticket list that is not a duplicate: run the `create-ticket` skill immediately without asking the user.
 
 ## Threshold articles
 
@@ -41,28 +41,11 @@ For each article in the threshold list that is not a duplicate: present it to th
 Create ticket? (yes/no)
 ```
 
-Wait for the user's response before moving to the next threshold article. Create the ticket only if the user approves. Record rejections in the output.
+Wait for the user's response before moving to the next threshold article. Run `create-ticket` only if the user approves. Record rejections in the output.
 
 ## Drop articles
 
 Do nothing. Do not mention them.
-
-## Ticket format
-
-Every created ticket must follow this exact format:
-
-- **Title**: article title, truncated to 80 characters if longer
-- **Team**: CC
-- **Project**: `<LINEAR_PROJECT>` (the active project's Linear project name)
-- **Labels**: `ai-not-read` and `human-not-read`
-- **Description**:
-  ```
-  <URL>
-
-  Source: <source name> | <date YYYY-MM-DD>
-
-  <1-2 sentence summary>
-  ```
 
 ## Output
 
@@ -72,4 +55,14 @@ After all tickets are processed, report:
 2. **Skipped duplicates** — list of article titles/URLs that already had tickets
 3. **Rejected threshold articles** — list of titles the user declined
 
-Then pass the list of created ticket IDs to the next step (`read-article`) for full reading and summarization.
+## Parallel article reading
+
+After all tickets are processed, spawn one `read-article` agent per created ticket **in parallel** using the Agent tool (subagent_type: `read-article`). Do not wait for one to finish before starting the next — launch all at once.
+
+For each ticket, derive a `raw_file` slug from the article title: lowercase, words joined by hyphens, `.md` suffix (e.g. `my-article-title.md`). Pass these inputs to each agent:
+
+```
+ticket=<ticket_id> url=<article_url> raw_file=<slug>.md project_slug=<active_project_slug>
+```
+
+Wait for all agents to complete, then report their outcomes alongside the ticket creation summary.

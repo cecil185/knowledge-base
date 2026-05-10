@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(*)",
+      "WebSearch(*)",
+      "mcp__linear-server__*"
+    ]
+  }
+}

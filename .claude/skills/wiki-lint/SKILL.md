@@ -24,9 +24,8 @@ Read the following files. If any are missing, note the absence in findings and c
 
 - `<PROJECT_DIR>/wiki/INDEX.md`
 - `<PROJECT_DIR>/wiki/SUMMARY.md`
-- `<PROJECT_DIR>/raw/INDEX.md`
 
-Parse each index into a list of (slug, file path, title) entries. Record every entry so later steps can cross-reference them.
+Parse each into a list of (slug, file path, title) entries. Also list all `.md` files under `<PROJECT_DIR>/raw/` — this is the authoritative list of raw docs.
 
 ## Step 2: Collect all files on disk
 
@@ -60,7 +59,7 @@ Read every article file identified in Step 2. For each:
 - Count words. Articles under 100 words are stubs.
 - Check whether a `## Sources` section (or `sources:` frontmatter) is present. Articles with no sources listed are flagged.
 
-Read every entry in `<PROJECT_DIR>/raw/INDEX.md`. For each raw slug, check whether any wiki article's frontmatter or body references that raw slug. Raw docs with no matching wiki article are "uncompiled."
+For each `.md` file in `<PROJECT_DIR>/raw/`, check whether any wiki article's frontmatter or body references that raw slug. Raw docs with no matching wiki article are "uncompiled."
 
 Scan all article bodies for concept or tool names. Flag pairs of articles where the titles or opening paragraphs are near-synonymous (same concept under different names). Treat this as a potential duplicate.
 
@@ -74,7 +73,7 @@ Aggregate all `[[WikiLink]]` targets across every article. For each link target 
 
 Scan article bodies for tool and framework names (anything that reads like a proper noun product name). For each name that does not have a `<PROJECT_DIR>/wiki/tools/<slug>.md` file, flag it as an unprofiled tool.
 
-Cross-reference `<PROJECT_DIR>/raw/INDEX.md` entries against `<PROJECT_DIR>/wiki/INDEX.md`. Any raw slug that is not referenced by any wiki article and was not already flagged as a Warning in Step 4 is a coverage opportunity.
+Cross-reference raw `.md` files against `<PROJECT_DIR>/wiki/INDEX.md`. Any raw slug not referenced by any wiki article and not already flagged as a Warning in Step 4 is a coverage opportunity.
 
 Collect findings:
 
