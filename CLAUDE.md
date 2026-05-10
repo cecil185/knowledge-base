@@ -4,26 +4,42 @@ Personal learning system. Discovers, filters, and synthesizes tech articles into
 
 Team key: **CC** — [Knowledge Base](https://linear.app/cecils-projects/team/CC/)
 
-- **Wiki project** — one ticket per article worth reading; comments hold the AI summary
 - **Work project** — tickets to build and improve this system itself
+- Each learning project has a dedicated **Wiki project** in Linear (see Projects section)
 
 Article ticket tags: `ai-not-read`, `ai-read`, `human-not-read`, `human-read`
+
+## Projects
+
+Each learning project lives at `projects/<slug>/` and has its own goal, sources, raw articles, wiki, and Linear project.
+
+| Slug | Name | Linear Project |
+|------|------|----------------|
+| data-ai-engineering | Data AI Engineering | Data AI Engineering |
+| applied-ai | Applied AI | Applied AI |
+
+**Default project:** `data-ai-engineering`
+
+To switch the default, edit the **Default project** line above. To target a specific project on a single command, pass the slug as an argument (e.g. `/digest applied-ai`).
 
 ## Directory structure
 
 ```
 knowledge-base/
-  goal.md          — current learning goal (managed by /goal-refine)
-  sources.md       — blog sources list (managed by /refine-sources)
-  about-me.md      — personal context for relevance filtering
-  raw/             — raw fetched article content (one .md per article)
-  wiki/            — compiled knowledge base (concepts, tools, synthesis)
-  skills/          — skill definitions (one subdirectory per skill)
-  scripts/         — utility shell scripts
-  .claude/         — Claude Code settings
+  projects/
+    data-ai-engineering/
+      goal.md          — learning goal (managed by /goal-refine)
+      sources.md       — blog sources list (managed by /refine-sources)
+      raw/             — raw fetched article content (one .md per article)
+      wiki/            — compiled knowledge base (concepts, tools, synthesis)
+    applied-ai/
+      goal.md
+      sources.md
+      raw/
+      wiki/
+  scripts/             — utility shell scripts
+  .claude/             — Claude Code settings (skills live here)
 ```
-
-Deduplication is handled by Linear (Wiki project) — no local log file.
 
 All data lives inside this repo. Nothing is stored outside it.
 
@@ -31,32 +47,33 @@ All data lives inside this repo. Nothing is stored outside it.
 
 ```
 /digest            — end-to-end: discover → filter → ticket → read → summarize → wiki
-/goal-refine       — create or refine goal.md through structured interview
-/refine-sources    — review and update the blog sources list in sources.md
+/goal-refine       — create or refine the active project's goal.md
+/refine-sources    — review and update the active project's blog sources list
 /article-critique  — on-demand deep review of a single article
-/wiki:ingest       — save a URL or topic to raw/; deduplicates against raw/INDEX.md
-/wiki:qa           — query the local knowledge base
+/wiki:ingest       — save a URL or topic to the active project's raw/
+/wiki:qa           — query the active project's knowledge base
 /wiki:compile      — synthesize raw/ docs into wiki/ concepts and tool articles
 /wiki:lint         — audit wiki for gaps and broken links
 ```
 
 ## /digest flow
 
-1. Read `goal.md` and `sources.md`
-2. Fetch candidates from Hacker News + sources list
-3. Filter into 3 buckets:
+1. Determine active project (from arg or default in CLAUDE.md)
+2. Read `projects/<slug>/goal.md` and `projects/<slug>/sources.md`
+3. Fetch candidates from Hacker News + sources list
+4. Filter into 3 buckets:
    - **Drop** — low quality or low relevance to goal
    - **Auto-ticket** — clear match; Linear ticket created automatically
    - **Threshold** — 1–2 sentence summary shown to Cecil; ticket created if approved
-4. Deduplicate: skip any URL already in Linear (Wiki project)
-5. For each new ticket: read article in full → comment with TLDR / Goal relation / How to apply
-6. Tags: `ai-not-read` → `ai-read` after full read; `human-not-read` set at creation
-7. `wiki:ingest` saves article to `raw/<slug>.md` and appends to `raw/INDEX.md`; `wiki:compile` synthesizes into `wiki/`
+5. Deduplicate: skip any URL already in the project's Linear project
+6. For each new ticket: read article in full → comment with TLDR / Goal relation / How to apply
+7. Tags: `ai-not-read` → `ai-read` after full read; `human-not-read` set at creation
+8. `wiki:ingest` saves article to `projects/<slug>/raw/<slug>.md` and appends to `projects/<slug>/raw/INDEX.md`; `wiki:compile` synthesizes into `projects/<slug>/wiki/`
 
 ## Goal
 
-`goal.md` has four fields: **What**, **Why**, **Horizon**, **Success looks like** — plus derived reading intent and relevance signals. Run `/goal-refine` to update it.
+Each project's `goal.md` has four fields: **What**, **Why**, **Horizon**, **Success looks like** — plus derived reading intent and relevance signals. Run `/goal-refine` to update the active project's goal.
 
 ## Sources
 
-`sources.md` lists blog sources beyond HN. HN is always included. Run `/refine-sources` to prune or add sources.
+Each project's `sources.md` lists blog sources beyond HN. HN is always included. Run `/refine-sources` to prune or add sources for the active project.

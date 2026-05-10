@@ -6,15 +6,19 @@ effort: medium
 ---
 # filter-articles
 
-Classify a list of candidate articles into three buckets using only title, source, and snippet — no full article fetching. Classification is driven entirely by the signals in `goal.md`.
+Classify a list of candidate articles into three buckets using only title, source, and snippet — no full article fetching. Classification is driven entirely by the signals in the active project's `goal.md`.
+
+## Active project
+
+Use the `PROJECT_DIR` established by the calling skill (digest). If called directly, determine the active project by reading `CLAUDE.md` and using the **Default project** slug. Set `PROJECT_DIR = projects/<slug>`.
 
 ## Precondition
 
-Read `goal.md` from the repo root before doing anything else.
+Read `<PROJECT_DIR>/goal.md` before doing anything else.
 
 If the file does not exist, stop immediately and tell the user:
 
-> `goal.md` is missing. Run `/goal-refine` first to define your learning goal, then re-run `/digest`.
+> `<PROJECT_DIR>/goal.md` is missing. Run `/goal-refine` first to define your learning goal, then re-run `/digest`.
 
 The **High-relevance article signals** and **Low-relevance article signals** sections of `goal.md` are the primary classification inputs. The **Reading intent** section provides additional context on what the user wants to get out of articles.
 

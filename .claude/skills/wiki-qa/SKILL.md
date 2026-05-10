@@ -8,6 +8,12 @@ effort: medium
 
 The primary query interface for the local knowledge base. Synthesizes an answer from `wiki/` (and `raw/` when needed), saves the output to `wiki/qa/`, and appends it to `wiki/INDEX.md`. Never fabricates — if the wiki does not cover a topic, it says so plainly.
 
+## Active project
+
+Determine the active project by reading `CLAUDE.md` from the repo root. Find the **Default project** slug in the `## Projects` section. Set `PROJECT_DIR = projects/<slug>`. All file paths below are relative to `/Users/cecil/Code/me/knowledge-base/<PROJECT_DIR>`.
+
+If called with a project argument (e.g. `/wiki:qa "what do I know about RAG" --project applied-ai`), use that slug instead.
+
 ## Input
 
 A natural-language question from the user. Examples:
@@ -21,8 +27,8 @@ A natural-language question from the user. Examples:
 
 Read:
 
-- `/Users/cecil/Code/me/knowledge-base/wiki/INDEX.md`
-- `/Users/cecil/Code/me/knowledge-base/wiki/SUMMARY.md`
+- `<PROJECT_DIR>/wiki/INDEX.md`
+- `<PROJECT_DIR>/wiki/SUMMARY.md`
 
 From these, build a mental map of what topics the wiki covers, what articles exist, and how they are organized. Identify which articles are most likely relevant to the user's question based on titles, tags, and the SUMMARY.
 
@@ -42,7 +48,7 @@ If fewer than 3 relevant wiki articles exist for the question, proceed to Step 3
 
 ## Step 3: Supplement from raw/ (when coverage is thin)
 
-Read `/Users/cecil/Code/me/knowledge-base/raw/INDEX.md`.
+Read `<PROJECT_DIR>/raw/INDEX.md`.
 
 Select up to 5 raw source files whose titles or slugs are relevant to the question. Read them. Use their content to supplement the answer, and note in the Gaps section that these raw docs have not yet been compiled into wiki articles.
 
@@ -86,7 +92,7 @@ If there are no meaningful gaps, write: `_The wiki's coverage on this topic appe
 
 Generate a slug from the question: lowercase, spaces and punctuation replaced with hyphens, truncated to 60 characters. Example: "what do I know about RAG" → `what-do-i-know-about-rag`.
 
-Write the answer to `/Users/cecil/Code/me/knowledge-base/wiki/qa/<slug>.md` with this frontmatter:
+Write the answer to `<PROJECT_DIR>/wiki/qa/<slug>.md` with this frontmatter:
 
 ```
 ---
@@ -106,7 +112,7 @@ If a Q&A file with the same slug already exists, overwrite it — the new answer
 
 ## Step 7: Update wiki/INDEX.md
 
-Read `/Users/cecil/Code/me/knowledge-base/wiki/INDEX.md`. Locate a `## Q&A` section. If no such section exists, append one at the end of the file.
+Read `<PROJECT_DIR>/wiki/INDEX.md`. Locate a `## Q&A` section. If no such section exists, append one at the end of the file.
 
 Append one line under `## Q&A`:
 
@@ -121,7 +127,7 @@ Do not duplicate the entry if the same slug already appears in the Q&A section �
 After saving the file, display the full synthesized answer in the conversation (do not make the user open the file to see the answer). Then report:
 
 ```
-Saved to wiki/qa/<slug>.md — appended to wiki/INDEX.md.
+Saved to <PROJECT_DIR>/wiki/qa/<slug>.md — appended to wiki/INDEX.md.
 Sources read: N wiki articles, N raw docs.
 ```
 

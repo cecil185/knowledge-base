@@ -8,6 +8,12 @@ effort: medium
 
 Audits the wiki knowledge base for health issues and growth opportunities. Run periodically or after a large `wiki:compile` batch. Writes findings to `wiki/LINT.md`. Accepts an optional `--fix` flag to auto-repair critical issues and write stub articles for coverage gaps.
 
+## Active project
+
+Determine the active project by reading `CLAUDE.md` from the repo root. Find the **Default project** slug in the `## Projects` section. Set `PROJECT_DIR = projects/<slug>`. All file paths below are relative to `/Users/cecil/Code/me/knowledge-base/<PROJECT_DIR>`.
+
+If called with a project argument (e.g. `/wiki:lint --project applied-ai`), use that slug instead.
+
 ## Inputs
 
 - Optional flag: `--fix`
@@ -16,9 +22,9 @@ Audits the wiki knowledge base for health issues and growth opportunities. Run p
 
 Read the following files. If any are missing, note the absence in findings and continue — do not abort.
 
-- `/Users/cecil/Code/me/knowledge-base/wiki/INDEX.md`
-- `/Users/cecil/Code/me/knowledge-base/wiki/SUMMARY.md`
-- `/Users/cecil/Code/me/knowledge-base/raw/INDEX.md`
+- `<PROJECT_DIR>/wiki/INDEX.md`
+- `<PROJECT_DIR>/wiki/SUMMARY.md`
+- `<PROJECT_DIR>/raw/INDEX.md`
 
 Parse each index into a list of (slug, file path, title) entries. Record every entry so later steps can cross-reference them.
 
@@ -26,9 +32,9 @@ Parse each index into a list of (slug, file path, title) entries. Record every e
 
 List the actual files present under:
 
-- `wiki/concepts/` — concept articles
-- `wiki/tools/` — tool profiles
-- `wiki/qa/` — Q&A outputs
+- `<PROJECT_DIR>/wiki/concepts/` — concept articles
+- `<PROJECT_DIR>/wiki/tools/` — tool profiles
+- `<PROJECT_DIR>/wiki/qa/` — Q&A outputs
 
 Build two sets: **indexed** (from INDEX.md) and **on-disk** (from the directory listing). The diff between them produces structural issues.
 
@@ -54,7 +60,7 @@ Read every article file identified in Step 2. For each:
 - Count words. Articles under 100 words are stubs.
 - Check whether a `## Sources` section (or `sources:` frontmatter) is present. Articles with no sources listed are flagged.
 
-Read every entry in `raw/INDEX.md`. For each raw slug, check whether any wiki article's frontmatter or body references that raw slug. Raw docs with no matching wiki article are "uncompiled."
+Read every entry in `<PROJECT_DIR>/raw/INDEX.md`. For each raw slug, check whether any wiki article's frontmatter or body references that raw slug. Raw docs with no matching wiki article are "uncompiled."
 
 Scan all article bodies for concept or tool names. Flag pairs of articles where the titles or opening paragraphs are near-synonymous (same concept under different names). Treat this as a potential duplicate.
 
@@ -66,9 +72,9 @@ Collect issues:
 
 Aggregate all `[[WikiLink]]` targets across every article. For each link target that appears in 3 or more articles but has no corresponding wiki article, flag it as a coverage gap candidate.
 
-Scan article bodies for tool and framework names (anything that reads like a proper noun product name). For each name that does not have a `wiki/tools/<slug>.md` file, flag it as an unprofiled tool.
+Scan article bodies for tool and framework names (anything that reads like a proper noun product name). For each name that does not have a `<PROJECT_DIR>/wiki/tools/<slug>.md` file, flag it as an unprofiled tool.
 
-Cross-reference `raw/INDEX.md` entries against `wiki/INDEX.md`. Any raw slug that is not referenced by any wiki article and was not already flagged as a Warning in Step 4 is a coverage opportunity.
+Cross-reference `<PROJECT_DIR>/raw/INDEX.md` entries against `<PROJECT_DIR>/wiki/INDEX.md`. Any raw slug that is not referenced by any wiki article and was not already flagged as a Warning in Step 4 is a coverage opportunity.
 
 Collect findings:
 
@@ -88,7 +94,7 @@ Collect findings:
 
 ## Step 7: Write wiki/LINT.md
 
-Write all findings to `/Users/cecil/Code/me/knowledge-base/wiki/LINT.md`, overwriting any previous run. Use this exact structure:
+Write all findings to `<PROJECT_DIR>/wiki/LINT.md`, overwriting any previous run. Use this exact structure:
 
 ```
 ---
@@ -145,13 +151,13 @@ Only execute this step if `--fix` was passed.
 
 For each **MISSING FILE** issue: create a minimal stub article at the path INDEX.md expects, with a frontmatter block (title, date, tags: []) and a single-sentence body: `_Stub — article content not yet written._`
 
-For each **NOT INDEXED** issue: append the missing entry to `wiki/INDEX.md` under the appropriate section (Concepts or Tools), using the article's frontmatter title.
+For each **NOT INDEXED** issue: append the missing entry to `<PROJECT_DIR>/wiki/INDEX.md` under the appropriate section (Concepts or Tools), using the article's frontmatter title.
 
-For each **BROKEN LINK** issue: do not remove the link. Instead, create a stub article for the missing target slug at `wiki/concepts/<slug>.md` so the link resolves. Use the same minimal stub format as above.
+For each **BROKEN LINK** issue: do not remove the link. Instead, create a stub article for the missing target slug at `<PROJECT_DIR>/wiki/concepts/<slug>.md` so the link resolves. Use the same minimal stub format as above.
 
 ### Write stubs for Opportunities
 
-For each **Coverage Gap** and **Unprofiled Tool**: use WebSearch to find 2-3 authoritative sources. Use WebFetch to read them. Write a real (not placeholder) stub article of at least 150 words to the appropriate path (`wiki/concepts/<slug>.md` or `wiki/tools/<slug>.md`). Include a `## Sources` section. Add the new article to `wiki/INDEX.md`.
+For each **Coverage Gap** and **Unprofiled Tool**: use WebSearch to find 2-3 authoritative sources. Use WebFetch to read them. Write a real (not placeholder) stub article of at least 150 words to the appropriate path (`<PROJECT_DIR>/wiki/concepts/<slug>.md` or `<PROJECT_DIR>/wiki/tools/<slug>.md`). Include a `## Sources` section. Add the new article to `<PROJECT_DIR>/wiki/INDEX.md`.
 
 Do not attempt to auto-repair Warnings (orphans, stubs, duplicates) — these require human judgment.
 
@@ -160,11 +166,11 @@ Do not attempt to auto-repair Warnings (orphans, stubs, duplicates) — these re
 After writing LINT.md (and running repairs if --fix), report:
 
 ```
-wiki:lint complete.
+wiki:lint complete — project: <Name>
   Critical:      N issues (N repaired if --fix)
   Warnings:      N
   Opportunities: N
-  Report:        wiki/LINT.md
+  Report:        <PROJECT_DIR>/wiki/LINT.md
 ```
 
 If any file read or write fails, note the failure in the report and continue — do not abort the full run for a single file error.

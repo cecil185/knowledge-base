@@ -6,12 +6,9 @@ _Last updated: 2026-05-09. Edit this file directly to update goals._
 
 ## Primary goals
 
-- **Level up with AI/agents** — get better at building with LLMs, Claude Code, MCP servers, and agentic workflows; not just using them, but understanding how to ship real things with them
-- **Build side projects / products** — ship something outside day-job work (tools, apps, or services); the goal is something working and potentially shareable
+- **Level up with AI/agents** — get better at building with LLMs, Claude Code, MCP servers, and agentic workflows; not just using them, but understanding how to ship real things with them in my day job as a data-engineer.
 
-## 6-month target
-
-Ship a meaningful side project. Concrete, working, potentially shareable or monetizable.
+## Be advanced user of AI as a software engineer
 
 ## Blind spots to fix
 

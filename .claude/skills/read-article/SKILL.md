@@ -1,6 +1,6 @@
 ---
 name: read-article
-description: Fetch a full article, post a structured AI summary as a Linear ticket comment, update ticket labels, and save raw content to raw/
+description: Fetch a full article, post a structured AI summary as a Linear ticket comment, update ticket labels, and save raw content to the active project's raw/
 model: claude-opus-4-6
 effort: medium
 ---
@@ -8,12 +8,16 @@ effort: medium
 
 Reads an article in full, posts a structured summary as a comment on its Linear ticket, updates ticket labels, and saves raw content to `raw/`. Called for each ticket after `create-tickets`, and also callable on-demand.
 
+## Active project
+
+Use the `PROJECT_DIR` established by the calling skill (digest). If called directly, determine the active project by reading `CLAUDE.md` and using the **Default project** slug. Set `PROJECT_DIR = projects/<slug>` (relative to repo root `/Users/cecil/Code/me/knowledge-base`).
+
 ## Input
 
 Either a Linear ticket ID (e.g. `CC-42`) or an article URL.
 
 - If a **ticket ID** is given: read the ticket description to extract the URL.
-- If a **URL** is given: search the Linear Wiki project for a ticket whose description contains that URL. If no ticket is found, stop and report the error — do not proceed without a ticket.
+- If a **URL** is given: search the active Linear project for a ticket whose description contains that URL. If no ticket is found, stop and report the error — do not proceed without a ticket.
 
 ## Step 1: Fetch the article
 
@@ -32,7 +36,7 @@ If the fetch fails or the content appears to be a paywall or login wall (thin co
 
 ## Step 2: Read goal.md
 
-Read `/Users/cecil/Code/me/knowledge-base/goal.md` to ground the summary in Cecil's current learning goals. Use the goal's Reading intent and High-relevance signals fields when writing the "How it relates to your goal" section.
+Read `<PROJECT_DIR>/goal.md` to ground the summary in Cecil's current learning goals. Use the goal's Reading intent and High-relevance signals fields when writing the "How it relates to your goal" section.
 
 ## Step 3: Post summary comment
 
@@ -63,7 +67,7 @@ Using the Linear MCP tools:
 
 Generate a slug from the article title: lowercase, spaces and punctuation replaced with hyphens, truncated to 60 characters.
 
-Write the file to `/Users/cecil/Code/me/knowledge-base/raw/<slug>.md` with this frontmatter followed by the full article body:
+Write the file to `<PROJECT_DIR>/raw/<slug>.md` with this frontmatter followed by the full article body:
 
 ```
 ---
@@ -77,7 +81,7 @@ tags: []
 <full article body>
 ```
 
-Then append one line to `/Users/cecil/Code/me/knowledge-base/raw/INDEX.md` (create the file with a `# Raw Article Index` header if it does not exist):
+Then append one line to `<PROJECT_DIR>/raw/INDEX.md` (create the file with a `# Raw Article Index` header if it does not exist):
 
 ```
 - [<title>](<slug>.md) — <ticket ID> — <YYYY-MM-DD>

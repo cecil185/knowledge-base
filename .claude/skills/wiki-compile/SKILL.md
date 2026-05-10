@@ -8,13 +8,19 @@ effort: high
 
 Process raw docs that have not yet been compiled into the wiki and update the structured knowledge base in `wiki/`. Called at the end of `/digest` and on-demand.
 
+## Active project
+
+Determine the active project by reading `CLAUDE.md` from the repo root. Find the **Default project** slug in the `## Projects` section. Set `PROJECT_DIR = projects/<slug>`. All file paths below are relative to `/Users/cecil/Code/me/knowledge-base/<PROJECT_DIR>`.
+
+If called with a project argument (e.g. `/wiki:compile --project applied-ai`), use that slug instead.
+
 ## Step 1: Identify uncompiled raw docs
 
-Read `/Users/cecil/Code/me/knowledge-base/raw/INDEX.md` to get the full list of ingested raw files.
+Read `<PROJECT_DIR>/raw/INDEX.md` to get the full list of ingested raw files.
 
-Read `/Users/cecil/Code/me/knowledge-base/wiki/INDEX.md` if it exists. If not, treat the wiki as empty.
+Read `<PROJECT_DIR>/wiki/INDEX.md` if it exists. If not, treat the wiki as empty.
 
-Compare the two indexes to identify raw docs not yet referenced in any wiki article. A raw doc is considered compiled if its slug appears in the `sources` frontmatter of at least one wiki article. Check by scanning frontmatter of all existing files under `wiki/concepts/` and `wiki/tools/`.
+Compare the two indexes to identify raw docs not yet referenced in any wiki article. A raw doc is considered compiled if its slug appears in the `sources` frontmatter of at least one wiki article. Check by scanning frontmatter of all existing files under `<PROJECT_DIR>/wiki/concepts/` and `<PROJECT_DIR>/wiki/tools/`.
 
 If there are no uncompiled raw docs, report "nothing to compile — wiki is up to date" and stop.
 
@@ -35,7 +41,7 @@ For each distinct concept identified across all new raw docs:
 
 Generate a slug: lowercase, hyphen-separated, max 60 characters.
 
-Check whether `/Users/cecil/Code/me/knowledge-base/wiki/concepts/<slug>.md` already exists.
+Check whether `<PROJECT_DIR>/wiki/concepts/<slug>.md` already exists.
 
 **If it does not exist**, create it:
 
@@ -75,7 +81,7 @@ For each distinct tool or framework identified across all new raw docs:
 
 Generate a slug from the tool name: lowercase, hyphen-separated, max 60 characters.
 
-Check whether `/Users/cecil/Code/me/knowledge-base/wiki/tools/<slug>.md` already exists.
+Check whether `<PROJECT_DIR>/wiki/tools/<slug>.md` already exists.
 
 **If it does not exist**, create it:
 
@@ -117,17 +123,17 @@ After writing all new and updated articles:
 
 ## Step 6: Update wiki/INDEX.md
 
-Rewrite `/Users/cecil/Code/me/knowledge-base/wiki/INDEX.md` with two sections: `## Concepts` and `## Tools`. Each entry:
+Rewrite `<PROJECT_DIR>/wiki/INDEX.md` with two sections: `## Concepts` and `## Tools`. Each entry:
 
 ```
 - [[Title]] — <one-line hook: what it is and why it matters>
 ```
 
-Sort each section alphabetically by title. Include all articles in `wiki/concepts/` and `wiki/tools/`, not just the ones updated in this run. Create the file if it does not exist.
+Sort each section alphabetically by title. Include all articles in `<PROJECT_DIR>/wiki/concepts/` and `<PROJECT_DIR>/wiki/tools/`, not just the ones updated in this run. Create the file if it does not exist.
 
 ## Step 7: Update wiki/SUMMARY.md
 
-Rewrite `/Users/cecil/Code/me/knowledge-base/wiki/SUMMARY.md` with:
+Rewrite `<PROJECT_DIR>/wiki/SUMMARY.md` with:
 
 ```
 # Wiki Summary

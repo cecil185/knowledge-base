@@ -6,13 +6,19 @@ effort: medium
 ---
 # Goal Refine
 
-Create or sharpen the single learning goal that drives all filtering in this system. The goal lives in `./goal.md` and is the source of truth for every skill that scores or filters articles.
+Create or sharpen the single learning goal that drives all filtering in this system. The goal lives in the active project's `goal.md` and is the source of truth for every skill that scores or filters articles.
+
+## Active project
+
+Determine the active project by reading `CLAUDE.md` from the repo root. Find the **Default project** slug in the `## Projects` section. Set `PROJECT_DIR = projects/<slug>`.
+
+If the user passes a project argument (e.g. `/goal-refine applied-ai`), use that slug instead. Announce which project's goal you are refining.
 
 ## Steps
 
-### 1. Read ./goal.md
+### 1. Read <PROJECT_DIR>/goal.md
 
-Read `./goal.md` from the repo root.
+Read `<PROJECT_DIR>/goal.md`.
 
 - **File missing or empty** → Create mode: build a goal from scratch using the interview below.
 - **File exists with content** → Refine mode: treat the existing 4 fields as first drafts; challenge each one's assumptions using the same interview below.
@@ -51,14 +57,14 @@ After the interview is complete, derive the following sections automatically fro
 
 ### 4. Show draft and confirm
 
-Display the full proposed `goal.md` in a code block. Ask one question: "Write this to goal.md? (yes / revise [what])"
+Display the full proposed `goal.md` in a code block. Ask one question: "Write this to `<PROJECT_DIR>/goal.md`? (yes / revise [what])"
 
 - If yes: write the file.
 - If revise: incorporate the revision and show the updated draft. Confirm once more before writing.
 
 Do not write the file without explicit confirmation.
 
-### 5. Write ./goal.md
+### 5. Write <PROJECT_DIR>/goal.md
 
 Write using exactly this format:
 

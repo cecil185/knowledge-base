@@ -8,6 +8,10 @@ effort: low
 
 Third step of `/digest`. Takes the three-bucket output from `filter-articles` and creates Linear tickets for articles that passed filtering.
 
+## Active project
+
+Use the `LINEAR_PROJECT` name established by the calling skill (digest). If called directly, determine the active project by reading `CLAUDE.md`, finding the **Default project** slug, and reading its Linear Project value from the Projects table.
+
 ## Input
 
 Three lists produced by `filter-articles`:
@@ -18,7 +22,7 @@ Three lists produced by `filter-articles`:
 
 ## Deduplication
 
-Before creating any ticket, search the Linear Wiki project (team CC) for an existing ticket whose description contains the article URL. If a match is found, skip that article and record it in the skipped-duplicates list. Do this check for both auto-ticket and threshold articles (check threshold articles before prompting the user — no point asking about a duplicate).
+Before creating any ticket, search the active Linear project (team CC, project `LINEAR_PROJECT`) for an existing ticket whose description contains the article URL. If a match is found, skip that article and record it in the skipped-duplicates list. Do this check for both auto-ticket and threshold articles (check threshold articles before prompting the user — no point asking about a duplicate).
 
 Use the Linear MCP tools to search existing tickets.
 
@@ -49,7 +53,7 @@ Every created ticket must follow this exact format:
 
 - **Title**: article title, truncated to 80 characters if longer
 - **Team**: CC
-- **Project**: Wiki
+- **Project**: `<LINEAR_PROJECT>` (the active project's Linear project name)
 - **Labels**: `ai-not-read` and `human-not-read`
 - **Description**:
   ```

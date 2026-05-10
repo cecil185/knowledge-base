@@ -1,12 +1,18 @@
 ---
 name: wiki:ingest
-description: Save a fetched article or topic research to raw/ as structured markdown; deduplicates against raw/INDEX.md
+description: Save a fetched article or topic research to the active project's raw/ as structured markdown; deduplicates against raw/INDEX.md
 model: claude-opus-4-6
 effort: medium
 ---
 # wiki:ingest
 
 Save article content into `raw/` as structured markdown. Called by `read-article` after fetching, and directly with a URL or topic.
+
+## Active project
+
+Determine the active project by reading `CLAUDE.md` from the repo root. Find the **Default project** slug in the `## Projects` section. Set `PROJECT_DIR = projects/<slug>`. All file paths below are relative to `/Users/cecil/Code/me/knowledge-base/<PROJECT_DIR>`.
+
+If called with a project argument (e.g. `/wiki:ingest <url> --project applied-ai`), use that slug instead.
 
 ## Input
 
@@ -28,7 +34,7 @@ Run 3–5 WebSearch queries covering different angles of the topic (e.g. introdu
 
 ## Step 2: Deduplicate
 
-Read `/Users/cecil/Code/me/knowledge-base/raw/INDEX.md`. If the file does not exist, treat the existing index as empty.
+Read `<PROJECT_DIR>/raw/INDEX.md`. If the file does not exist, treat the existing index as empty.
 
 For each fetched source URL, normalise before comparing:
 - Strip trailing slashes
@@ -61,11 +67,11 @@ Leave `tags` as an empty list `[]`. Tags are populated by later skills.
 
 ## Step 5: Check for a Linear ticket
 
-Search the Linear Wiki project (team CC) for an open ticket whose description contains the source URL. If found, record the ticket ID (e.g. `CC-42`). If not found, use `"none"`.
+Search the active Linear project (determined from CLAUDE.md) for an open ticket whose description contains the source URL. If found, record the ticket ID (e.g. `CC-42`). If not found, use `"none"`.
 
 ## Step 6: Write file(s)
 
-Write to `/Users/cecil/Code/me/knowledge-base/raw/<slug>.md` (or `<slug>-part-N.md` for splits).
+Write to `<PROJECT_DIR>/raw/<slug>.md` (or `<slug>-part-N.md` for splits).
 
 Frontmatter followed immediately by the extracted article body:
 
@@ -86,7 +92,7 @@ For split files, add `part: N` and `total_parts: N` fields to the frontmatter.
 
 ## Step 7: Update raw/INDEX.md
 
-Append one line per saved file to `/Users/cecil/Code/me/knowledge-base/raw/INDEX.md`. Create the file with a `# Raw Article Index` header if it does not exist.
+Append one line per saved file to `<PROJECT_DIR>/raw/INDEX.md`. Create the file with a `# Raw Article Index` header if it does not exist.
 
 Format:
 
@@ -99,8 +105,8 @@ For split files, list only the first part with a note: `(split: N parts)`.
 ## Output
 
 For each source processed, report one of:
-- `saved: raw/<slug>.md` — file written successfully
-- `skipped — duplicate: raw/<existing-slug>.md` — URL already in index
+- `saved: <PROJECT_DIR>/raw/<slug>.md` — file written successfully
+- `skipped — duplicate: <PROJECT_DIR>/raw/<existing-slug>.md` — URL already in index
 - `fetch failed: <reason>` — could not retrieve content
 
 If given a topic, also summarise: N sources fetched, N saved, N skipped, N failed.

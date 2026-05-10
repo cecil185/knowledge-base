@@ -6,7 +6,11 @@ effort: medium
 ---
 # search-articles
 
-Find candidate articles published in the last 4 days from Hacker News and all sources listed in `sources.md`. Produce a flat deduplicated list ready for `filter-articles` to classify.
+Find candidate articles published in the last 4 days from Hacker News and all sources listed in the active project's `sources.md`. Produce a flat deduplicated list ready for `filter-articles` to classify.
+
+## Active project
+
+Use the `PROJECT_DIR` established by the calling skill (digest). If called directly, determine the active project by reading `CLAUDE.md` and using the **Default project** slug. Set `PROJECT_DIR = projects/<slug>`.
 
 ## Steps
 
@@ -36,7 +40,7 @@ From each hit, extract:
 
 ### 3. Query curated blog sources
 
-Read `sources.md` from the repo root to get the list of blog sources.
+Read `<PROJECT_DIR>/sources.md` to get the list of blog sources.
 
 For each source, run a `WebSearch` with the query:
 

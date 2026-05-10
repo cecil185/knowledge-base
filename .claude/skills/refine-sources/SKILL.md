@@ -10,11 +10,17 @@ Review the list of supplemental sources that `/digest` searches beyond Hacker Ne
 
 HN is always searched. It is never in `sources.md`. This skill only manages the supplemental list.
 
+## Active project
+
+Determine the active project by reading `CLAUDE.md` from the repo root. Find the **Default project** slug in the `## Projects` section. Set `PROJECT_DIR = projects/<slug>`.
+
+If the user passes a project argument (e.g. `/refine-sources applied-ai`), use that slug instead. Announce which project's sources you are reviewing.
+
 ## Steps
 
-### 1. Read ./sources.md
+### 1. Read <PROJECT_DIR>/sources.md
 
-Read `./sources.md` from the repo root.
+Read `<PROJECT_DIR>/sources.md`.
 
 - **File missing or empty** → Create it with the following starting sources and continue to step 2:
 
@@ -26,9 +32,9 @@ Read `./sources.md` from the repo root.
 
 - **File exists** → Use the existing list.
 
-### 2. Read ./goal.md
+### 2. Read <PROJECT_DIR>/goal.md
 
-Read `./goal.md`. Extract the What, Why, and high/low-relevance signals. This is the filter for every judgment below.
+Read `<PROJECT_DIR>/goal.md`. Extract the What, Why, and high/low-relevance signals. This is the filter for every judgment below.
 
 ### 3. Show the current list
 
@@ -57,14 +63,14 @@ If the user names a source, ask for the URL and topic focus if not already provi
 
 ### 6. Show final proposed list and confirm
 
-Display the full updated table in a code block. Ask: "Write this to sources.md? (yes / revise [what])"
+Display the full updated table in a code block. Ask: "Write this to `<PROJECT_DIR>/sources.md`? (yes / revise [what])"
 
 - If yes: write the file.
 - If revise: incorporate the change, show the updated table, confirm once more.
 
 Do not write the file without explicit confirmation.
 
-### 7. Write ./sources.md
+### 7. Write <PROJECT_DIR>/sources.md
 
 Write using exactly this format:
 
