@@ -9,6 +9,26 @@ Team key: **CC** — [Knowledge Base](https://linear.app/cecils-projects/team/CC
 
 Article ticket tags: `ai-not-read`, `ai-read`, `human-not-read`, `human-read`
 
+## Projects
+
+Skills that need the active project read this table to resolve the slug → Linear project name mapping. When a skill says "Default project", use the row marked ✓.
+
+| Slug | Name | Linear Project | Default |
+|------|------|----------------|---------|
+| `data-ai-engineering` | Data AI Engineering | Data AI Engineering | ✓ |
+| `applied-ai` | Applied AI | Applied AI | |
+
+> **Note:** `Linear Project` must match the project's exact display name in Linear (team CC). Update this table if a project is renamed.
+
+## Data model
+
+**Article URL is the identity key** across all stores:
+- `raw/<slug>.md` — frontmatter `url:` field holds the canonical URL
+- Linear ticket — URL appears as the first line of the ticket description
+- `check-duplicate` uses URL (normalised: no trailing slash, no `utm_*` params, scheme-agnostic) to detect duplicates across both stores
+
+Raw files and their Linear tickets are linked solely by matching URL — there is no other ID.
+
 ## Directory structure
 
 ```
@@ -17,7 +37,7 @@ knowledge-base/
     data-ai-engineering/
       goal.md          — learning goal (managed by /goal-refine)
       sources.md       — blog sources list (managed by /refine-sources)
-      raw/             — raw fetched article content (one .md per article)
+      raw/             — AI-analyzed article summaries with frontmatter metadata (one .md per article)
       wiki/            — compiled knowledge base (concepts, tools, synthesis)
     applied-ai/
       goal.md
@@ -27,8 +47,6 @@ knowledge-base/
   scripts/             — utility shell scripts
   .claude/             — Claude Code settings (skills live here)
 ```
-
-All data lives inside this repo. Nothing is stored outside it.
 
 ## Skills
 
@@ -41,6 +59,7 @@ All data lives inside this repo. Nothing is stored outside it.
 /wiki:qa           — query the active project's knowledge base
 /wiki:compile      — synthesize raw/ docs into wiki/ concepts and tool articles
 /wiki:lint         — audit wiki for gaps and broken links
+/wiki:purge        — delete raw files for tickets labelled delete-from-wiki (Done → Cancelled)
 ```
 
 ## /digest flow

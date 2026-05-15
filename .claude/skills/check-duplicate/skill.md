@@ -1,6 +1,6 @@
 ---
 name: check-duplicate
-description: Check whether an article URL already exists in the active Linear project or in raw/INDEX.md; returns status for both checks
+description: Check whether an article URL already exists in the active Linear project; returns the ticket ID if found
 model: claude-opus-4-6
 effort: low
 ---

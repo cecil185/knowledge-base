@@ -13,6 +13,7 @@ Personal learning system. Discovers, filters, and synthesizes tech articles into
 | `/wiki:compile` | Synthesize `raw/` into `wiki/` (safe to re-run) |
 | `/wiki:qa <question>` | Query the compiled wiki |
 | `/wiki:lint [--fix]` | Audit wiki for broken links, stubs, gaps |
+| `/wiki:purge` | Delete raw files for tickets labelled `delete-from-wiki` in Done; marks tickets Cancelled |
 | `/goal-refine` | Create or update the active project's `goal.md` |
 | `/refine-sources` | Prune or add sources to the active project's `sources.md` |
 
@@ -44,7 +45,7 @@ projects/
   <slug>/
     goal.md
     sources.md
-    raw/       ← fetched article content
+    raw/       ← AI-analyzed article summaries (linked to Linear tickets by URL)
     wiki/
       concepts/
       tools/

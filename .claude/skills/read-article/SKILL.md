@@ -1,12 +1,12 @@
 ---
 name: read-article
-description: Fetch a full article, post a structured AI summary as a Linear ticket comment, update ticket labels, and save raw content to the active project's raw/
+description: Fetch an article, produce a structured extraction for raw/ and a goal-aware AI summary for Linear — in a single pass. Updates ticket labels.
 model: claude-opus-4-6
 effort: medium
 ---
 # read-article
 
-Reads an article in full, posts a structured summary as a comment on its Linear ticket, updates ticket labels, and saves raw content to `raw/`. Called for each ticket after `create-tickets`, and also callable on-demand.
+Reads an article in full, then in a single LLM pass produces both a structured extraction (saved to `raw/`) and a goal-aware summary comment (posted to Linear). Updates ticket labels. Called for each ticket after `create-tickets`, and also callable on-demand.
 
 ## Active project
 
@@ -19,9 +19,19 @@ Either a Linear ticket ID (e.g. `CC-42`) or an article URL.
 - If a **ticket ID** is given: read the ticket description to extract the URL.
 - If a **URL** is given: search the active Linear project for a ticket whose description contains that URL. If no ticket is found, stop and report the error — do not proceed without a ticket.
 
-## Step 1: Fetch the article
+## Step 1: Check for existing raw file
 
-Use WebFetch to retrieve the full article content.
+Before fetching, scan `PROJECT_DIR/raw/` for any `.md` file whose `url:` frontmatter field matches the ticket URL (exact match, case-insensitive).
+
+- If a match is found: use that file's body as the extraction. Skip to Step 3 (post Linear comment). Do **not** run `save-article-raw` in Step 4 (file already exists).
+- If no match is found: proceed to fetch below.
+
+## Step 1b: Fetch article and goal — in parallel
+
+Run both of these simultaneously:
+
+1. Use WebFetch to retrieve the full article content.
+2. Read `<PROJECT_DIR>/goal.md`.
 
 If the fetch fails or the content appears to be a paywall or login wall (thin content, subscription prompt, no article body):
 
@@ -34,13 +44,39 @@ If the fetch fails or the content appears to be a paywall or login wall (thin co
    ```
 2. Stop. Leave all labels unchanged.
 
-## Step 2: Read goal.md
+## Step 2: Single-pass extraction and summary
 
-Read `<PROJECT_DIR>/goal.md` to ground the summary in Cecil's current learning goals. Use the goal's Reading intent and High-relevance signals fields when writing the "How it relates to your goal" section.
+With the full article text and `goal.md` both in context, produce **two outputs in one pass**:
 
-## Step 3: Post summary comment
+---
 
-Post the following comment to the Linear ticket. Follow this format exactly — no extra sections, no omissions:
+### Output A — Structured extraction (for raw file)
+
+Goal-agnostic. Faithful to what the article actually says. Target: 400–800 words.
+
+```
+## Key claims
+2–4 bullet points. The article's central arguments or findings.
+
+## Concepts
+Named ideas, patterns, or principles the article explains. One line each.
+
+## Tools & frameworks
+Named software, libraries, services, or systems discussed. One line each.
+
+## Patterns & techniques
+Concrete techniques, configurations, or architectures described. Enough detail to act on.
+
+## Tradeoffs
+What approaches gain, what they cost, and when they fit or don't.
+
+## Notable quotes / stats
+Direct quotes or specific numbers worth preserving verbatim.
+```
+
+### Output B — Goal-aware summary (for Linear comment)
+
+Grounded in `goal.md`'s Reading intent and High-relevance signals fields.
 
 ```
 ## AI Summary
@@ -55,20 +91,26 @@ Post the following comment to the Linear ticket. Follow this format exactly — 
 Concrete techniques, configurations, or architectures that can be applied. If nothing actionable: "No direct action — awareness only."
 ```
 
-## Step 4: Update labels
+---
 
-Using the Linear MCP tools:
+## Step 3: Post summary comment and update labels — in parallel
 
-- Add label: `ai-read`
-- Remove label: `ai-not-read`
-- Leave `human-not-read` unchanged
+Run both simultaneously:
 
-## Step 5: Save raw content
+1. Post Output B as a comment on the Linear ticket.
+2. Update labels:
+   - Add label: `ai-read`
+   - Remove label: `ai-not-read`
+   - Leave `human-not-read` unchanged
+
+## Step 4: Save raw extraction
+
+Skip this step if the article body was loaded from an existing raw file in Step 1.
 
 Run the `save-article-raw` skill with:
 - `title` — article title (extracted from page)
 - `url` — article URL
-- `body` — full extracted article body
+- `body` — Output A (structured extraction)
 - `project_dir` — `PROJECT_DIR`
 - `linear_ticket` — ticket ID
 - `fetched` — today's date
@@ -80,4 +122,4 @@ Run the `save-article-raw` skill with:
 Report:
 - Ticket ID and Linear URL
 - Whether the summary comment was posted successfully
-- Path to the saved raw file, or reason for failure
+- Path to the saved raw file, or reason for skipping/failure
