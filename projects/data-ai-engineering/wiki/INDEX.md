@@ -40,3 +40,7 @@
 - [[Playwright]] — dominant open-source browser automation framework (Chromium/Firefox/WebKit) underlying modern E2E platforms
 - [[Shiplight]] — AI-native E2E testing platform built around intent-based authoring and three-tier self-healing
 - [[Symphony]] — OpenAI's open-source orchestration spec turning Codex agents into an issue-tracker-driven daemon
+
+## Q&A
+
+- [[qa/catching-ai-bugs-reducing-human-review-load]] — what are teams doing to catch bugs from AI and reduce human review load — 2026-05-16

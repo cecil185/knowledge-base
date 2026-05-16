@@ -17,7 +17,7 @@ Linear exposes a GraphQL API that orchestrators use to fetch candidate issues an
 
 This implements the [[Issue Tracker As Control Plane]] pattern: the tracker is the only durable source of truth, so any orchestrator restart can reconcile state by re-reading Linear rather than consulting a local database.
 
-Cecil's Knowledge Base also uses Linear directly — the `CC` team holds the Work project plus a Wiki project per learning topic, with article tags (`ai-not-read`, `ai-read`, `human-not-read`, `human-read`) acting as a smaller-scale version of the same status-as-state-machine pattern.
+Cecil's Knowledge Base also uses Linear directly — the `CC` team holds the Work project plus a Wiki project per learning topic, with article tags (`human-not-read`, `human-read`) acting as a smaller-scale version of the same status-as-state-machine pattern.
 
 ## Strengths
 - GraphQL API with good ergonomics for both human dashboards and agent automation.

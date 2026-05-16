@@ -7,5 +7,12 @@ HN is always searched. These are additional sources:
 | Source | URL | Topic focus | Last active |
 |--------|-----|-------------|-------------|
 | Simon Willison | simonwillison.net | LLMs, tools, AI engineering | active |
-| Databricks Blog | databricks.com/blog | Data + AI platform, Spark, MLflow | active |
 | Confluent Blog | confluent.io/blog | Kafka, streaming, data pipelines | active |
+
+## Blocklist
+
+Domains here are filtered out of all candidate lists (HN + curated). Use for vendor SEO/marketing blogs that keep surfacing low-value content.
+
+| Domain | Reason |
+|--------|--------|
+| shiplight.ai | Vendor marketing / SEO posts (e.g. "Complete Guide to…") |

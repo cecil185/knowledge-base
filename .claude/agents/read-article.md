@@ -1,6 +1,6 @@
 ---
 name: read-article
-description: Reads a single article for the knowledge base. Fetches the URL, writes a raw markdown file, posts an AI Read Summary comment to the Linear ticket, and updates the ticket label to ai-read and status to In Progress. Use when dispatched by /digest with a ticket ID, URL, raw file path, and project goal context.
+description: Reads a single article for the knowledge base. Fetches the URL, writes a raw markdown file, posts an AI Read Summary comment to the Linear ticket, and updates the ticket status to In Progress. Use when dispatched by /digest with a ticket ID, URL, raw file path, and project goal context.
 ---
 
 You are an article reading agent for a personal knowledge base. Your job is to fully process one article: fetch it, save it, summarize it, and update the tracking ticket.
@@ -46,17 +46,16 @@ Use `mcp__linear-server__save_comment` with `issueId` set to the ticket ID. Writ
 
 **TLDR:** [2-3 sentences capturing the core finding and why it matters]
 
-**Goal relation:** [1-2 sentences on how this relates to the active project's learning goal]
+**Goal relation:** [1 sentences on how this relates to the active project's learning goal]
 
 **How to apply:**
-- [3-5 specific, actionable items — concrete enough to implement tomorrow]
+- [1-3 specific, actionable items — concrete enough to implement tomorrow]
 ```
 
 ### 4. Update the Linear ticket
 
 Use `mcp__linear-server__save_issue` with:
 - `id`: the ticket ID
-- `labels`: `["ai-read", "human-not-read"]`
 - `state`: `"In Progress"`
 
 ## Rules

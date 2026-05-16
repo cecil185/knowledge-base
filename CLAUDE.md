@@ -7,7 +7,7 @@ Team key: **CC** — [Knowledge Base](https://linear.app/cecils-projects/team/CC
 - **Work project** — tickets to build and improve this system itself
 - Each learning project has a dedicated **Wiki project** in Linear (see Projects section)
 
-Article ticket tags: `ai-not-read`, `ai-read`, `human-not-read`, `human-read`
+Article ticket tags: `human-not-read`, `human-read`
 
 ## Projects
 
@@ -73,7 +73,7 @@ knowledge-base/
    - **Threshold** — 1–2 sentence summary shown to Cecil; ticket created if approved
 5. Deduplicate: skip any URL already in the project's Linear project
 6. For each new ticket: read article in full → comment with TLDR / Goal relation / How to apply
-7. Tags: `ai-not-read` → `ai-read` after full read; `human-not-read` set at creation
+7. Tags: `human-not-read` set at creation
 8. `wiki:ingest` saves article to `projects/<slug>/raw/<slug>.md` and appends to `projects/<slug>/raw/INDEX.md`; `wiki:compile` synthesizes into `projects/<slug>/wiki/`
 
 ## Goal
