@@ -29,6 +29,8 @@ Classify each article into exactly one of:
 ### drop
 
 Discard without creating a ticket. Use when any of the following apply:
+- URL host matches a domain in the **Blocklist** section of `<PROJECT_DIR>/sources.md` (case-insensitive, ignore `www.`, match exact or subdomain)
+- Vendor SEO/marketing post: "Complete Guide to…", "How to QA…", "The Ultimate…" style titles from a vendor's own blog
 - Title or snippet clearly falls outside the goal's high-relevance signals
 - Matches one or more low-relevance signals from `goal.md`
 - Opinion piece, trend roundup, or "state of X" without concrete technical content

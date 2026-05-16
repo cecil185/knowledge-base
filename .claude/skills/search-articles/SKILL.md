@@ -57,7 +57,11 @@ From each result, extract:
 - `snippet`: the search result description/excerpt
 - `date`: date from search result metadata if available, otherwise leave blank
 
-### 4. Deduplicate
+### 4. Apply blocklist
+
+Read the **Blocklist** section of `<PROJECT_DIR>/sources.md` (if present). Drop any candidate whose URL host matches a blocklisted domain (exact match or subdomain). Match is case-insensitive and ignores `www.` prefix.
+
+### 5. Deduplicate
 
 Normalise all URLs before comparing:
 - Strip trailing slashes
@@ -66,7 +70,7 @@ Normalise all URLs before comparing:
 
 Keep only the first occurrence of each URL across all result sets.
 
-### 5. Output
+### 6. Output
 
 Emit a flat markdown list. Aim for 20–40 candidates. Do not filter or rank at this stage — include everything that passed deduplication.
 

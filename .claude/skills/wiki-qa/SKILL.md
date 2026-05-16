@@ -42,7 +42,20 @@ From the full article list in INDEX.md, select the **5–15 articles** most rele
 
 Prefer wiki articles (concepts/, tools/) over Q&A outputs (qa/) to avoid circular synthesis.
 
-Read each selected article in full. Note any `[[WikiLink]]` references to other articles not already in your selection — if those links look highly relevant, read those too (up to the 15-article cap).
+**Before reading, output a reading plan to the conversation:**
+
+```
+## Reading plan
+
+Approach: <one sentence on how you'll answer this question — e.g. "Comparing X and Y across latency, cost, and ease of use">
+
+Selected articles:
+- `<path>` — <one phrase: why this is relevant>
+- `<path>` — <one phrase: why this is relevant>
+- ...
+```
+
+Then read each selected article in full. Note any `[[WikiLink]]` references to other articles not already in your selection — if those links look highly relevant, read those too (up to the 15-article cap). If you add articles after the initial plan, append them to the reading plan output with a `(+ followed link)` note.
 
 If fewer than 3 relevant wiki articles exist for the question, proceed to Step 3. Otherwise, skip Step 3.
 
@@ -73,7 +86,21 @@ Write the answer using the chosen format. Rules:
 - **Prefer synthesis over quoting**: paraphrase and connect ideas; do not transcribe article excerpts verbatim.
 - **Never fabricate**: if the wiki does not cover something, state that gap in the Gaps section rather than filling it from general knowledge.
 
-End every answer — regardless of format — with this section:
+Before the Gaps section, end every answer with a **Sources Consulted** section:
+
+```
+## Sources Consulted
+
+| Source | What it contributed |
+|--------|---------------------|
+| [[slug]] | <one line: the key fact, argument, or data point this article provided> |
+| raw/slug.md | <one line: what this raw doc added> |
+| ... | ... |
+```
+
+List every article actually read — not just those cited in the body. If an article was read but added nothing useful, include it with "read but not relevant to this question."
+
+Then end every answer — regardless of format — with this section:
 
 ```
 ## Gaps
@@ -129,6 +156,7 @@ After saving the file, display the full synthesized answer in the conversation (
 ```
 Saved to <PROJECT_DIR>/wiki/qa/<slug>.md — appended to wiki/INDEX.md.
 Sources read: N wiki articles, N raw docs.
+Articles: <comma-separated list of slugs read>
 ```
 
 If any article read fails (file not found, etc.), note it and continue — do not abort the answer for a single missing file.

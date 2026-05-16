@@ -24,7 +24,7 @@ Create the ticket using the Linear MCP tools with exactly these fields:
 - **Title**: `<title>` truncated to 80 characters at a word boundary
 - **Team**: `CC`
 - **Project**: `<LINEAR_PROJECT>`
-- **Labels**: `ai-not-read` and `human-not-read`
+- **Labels**: `human-not-read`
 - **Description**:
   ```
   <url>

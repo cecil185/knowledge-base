@@ -88,7 +88,7 @@ Grounded in `goal.md`'s Reading intent and High-relevance signals fields.
 1-2 sentences. Direct connection to goal.md — or "not directly relevant" if the connection is thin.
 
 **How to apply it**
-Concrete techniques, configurations, or architectures that can be applied. If nothing actionable: "No direct action — awareness only."
+Max. 3 bullets - Concrete techniques, configurations, or architectures that can be applied.
 ```
 
 ---
@@ -98,10 +98,7 @@ Concrete techniques, configurations, or architectures that can be applied. If no
 Run both simultaneously:
 
 1. Post Output B as a comment on the Linear ticket.
-2. Update labels:
-   - Add label: `ai-read`
-   - Remove label: `ai-not-read`
-   - Leave `human-not-read` unchanged
+2. Leave all labels unchanged (no label updates needed)
 
 ## Step 4: Save raw extraction
 

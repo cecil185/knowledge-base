@@ -69,7 +69,7 @@ If the total score is 7 or higher:
 2. Create a Linear ticket in the Wiki project:
    - Title: article title
    - Description: URL + one-sentence thesis
-   - Labels: `ai-not-read`, `human-not-read`
-3. Run the `read-article` skill, passing the new ticket ID and URL. It will fetch full content, write to `raw/`, post a TLDR / Goal relation / How to apply comment, and flip the label to `ai-read`.
+   - Labels: `human-not-read`
+3. Run the `read-article` skill, passing the new ticket ID and URL. It will fetch full content, write to `raw/`, post a TLDR / Goal relation / How to apply to Linear ticket.
 
 Do not run `wiki:compile` automatically here — that is the digest pipeline's responsibility. If the user wants the wiki updated after a critique, they can run `/wiki:compile` manually.
