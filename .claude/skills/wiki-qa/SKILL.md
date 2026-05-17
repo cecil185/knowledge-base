@@ -6,7 +6,7 @@ effort: medium
 ---
 # wiki:qa
 
-The primary query interface for the local knowledge base. Synthesizes an answer from `wiki/` (and `raw/` when needed), saves the output to `wiki/qa/`, and appends it to `wiki/INDEX.md`. Never fabricates — if the wiki does not cover a topic, it says so plainly.
+The primary query interface for the local knowledge base. When a `chunks.sqlite` store exists for the active project, it retrieves grounded answers using the Anthropic Citations API with markdown footnotes. When no chunk store is available, it falls back to synthesizing from `wiki/` and `raw/` files (all claims tagged `[synthesis]`). Output is always saved to `wiki/qa/` and indexed.
 
 ## Active project
 
@@ -23,49 +23,172 @@ A natural-language question from the user. Examples:
 - "Have I seen anything on model quantization?"
 - "Compare vLLM and llama.cpp"
 
-## Step 1: Survey the knowledge base
+## Step 1: Retrieve chunks from chunk store
+
+Run the retrieval script against the project's chunk store:
+
+```bash
+python3 /Users/cecil/Code/me/knowledge-base/scripts/retrieve_chunks.py \
+  --project-dir /Users/cecil/Code/me/knowledge-base/<PROJECT_DIR> \
+  --query "<user question>" \
+  --top-k 10
+```
+
+Parse the JSON array output into a list of chunk objects: `[{id, article_slug, paragraph_idx, text, url}]`.
+
+**If the result is an empty list** (DB absent or no matches): skip Steps 2–4 and jump directly to Step 5 (Fallback path).
+
+## Step 2: Call Anthropic Citations API
+
+Using the Anthropic Python SDK, make a messages API call with citations enabled. Pass each retrieved chunk as a `document` block with its URL as the `title` field.
+
+```python
+import anthropic
+
+client = anthropic.Anthropic()
+
+documents = [
+    {
+        "type": "document",
+        "source": {"type": "text", "media_type": "text/plain", "data": chunk["text"]},
+        "title": chunk["url"],
+        "citations": {"enabled": True},
+    }
+    for chunk in retrieved_chunks
+]
+
+response = client.messages.create(
+    model="claude-opus-4-6",
+    max_tokens=2048,
+    system=(
+        "You are a research assistant answering questions from a personal knowledge base. "
+        "Answer thoroughly. For any claim you can ground in the provided documents, use a citation. "
+        "For claims you cannot ground, explicitly tag them [synthesis] inline immediately after the sentence."
+    ),
+    messages=[
+        {
+            "role": "user",
+            "content": documents + [{"type": "text", "text": f"Question: {question}"}],
+        }
+    ],
+)
+```
+
+Parse the response `content` blocks. For each block:
+- If it contains `citations` (a list of citation objects): extract `cited_text` and `document_title` (the URL) from each citation object.
+- If it has no citations attached: the text is ungrounded.
+
+Build an intermediate representation — a list of segments: `{text: str, citations: [{url: str, cited_text: str}]}`.
+
+## Step 3: Render footnotes and tag [synthesis]
+
+Convert the intermediate representation to final markdown.
+
+Rules:
+- For each segment **with citations**: append `[^N]` after the segment text in the answer body. Increment N for each unique citation. Accumulate footnote definitions of the form `[^N]: <url> — "<cited_text>"` for the footnote block emitted after `---` at the end of the answer body.
+- For each segment **without citations** that makes a factual claim: append `[synthesis]` immediately after the sentence inline.
+
+Footnote format example:
+
+```
+The study found that transformers outperform RNNs on long sequences.[^1]
+
+---
+[^1]: https://example.com/paper — "transformers outperform RNNs on long sequences of more than 512 tokens"
+```
+
+`[synthesis]` tag format: `This suggests broader applicability.[synthesis]`
+
+## Step 4: Build full answer
+
+Assemble the answer in the following order.
+
+**Reading plan block** — output this to the conversation before calling the Citations API so progress is visible:
+
+```
+## Reading plan
+
+Approach: <one sentence on how you answered — e.g. "Grounding answer in retrieved chunks on transformer inference">
+
+Retrieved chunks:
+- `<article_slug>` paragraph N — <one phrase: why relevant>
+- `<article_slug>` paragraph N — <one phrase: why relevant>
+- ...
+```
+
+**Grounded answer body** (from Step 3) — prose with `[^N]` footnote references and `[synthesis]` tags inline.
+
+**Sources Consulted section:**
+
+```
+## Sources Consulted
+
+| Source | What it contributed |
+|--------|---------------------|
+| <article_slug> | <one line: the key fact or argument this chunk provided> |
+| ... | ... |
+```
+
+List every article_slug that appeared in the retrieved chunks. If a chunk was retrieved but contributed nothing to the answer, include it with "retrieved but not directly used."
+
+**Gaps section:**
+
+```
+## Gaps
+
+What the wiki is missing on this topic:
+
+- <specific gap>: run `/digest` to find new articles, or `wiki:ingest <url>` to add a specific source.
+```
+
+If there are no meaningful gaps: `_The wiki's coverage on this topic appears sufficient for the current goal._`
+
+**Footnote definitions block** (if any footnotes were emitted):
+
+```
+---
+[^1]: <url> — "<cited_text>"
+[^2]: <url> — "<cited_text>"
+```
+
+## Step 5: Fallback path (when chunk retrieval returns empty)
+
+When `retrieve_chunks.py` returns `[]` (DB absent or no matches), fall back to synthesizing from wiki and raw files.
+
+**Survey the knowledge base:**
 
 Read:
-
 - `<PROJECT_DIR>/wiki/INDEX.md`
 - `<PROJECT_DIR>/wiki/SUMMARY.md`
 
-From these, build a mental map of what topics the wiki covers, what articles exist, and how they are organized. Identify which articles are most likely relevant to the user's question based on titles, tags, and the SUMMARY.
+Build a mental map of what topics the wiki covers, what articles exist, and how they are organized.
 
-## Step 2: Select and read relevant articles
+**Select and read relevant articles:**
 
 From the full article list in INDEX.md, select the **5–15 articles** most relevant to the question. Relevance criteria:
-
 - Title or slug directly matches a key term in the question.
 - Article is linked from or links to another highly relevant article.
 - Article is tagged with a term that appears in the question.
 
 Prefer wiki articles (concepts/, tools/) over Q&A outputs (qa/) to avoid circular synthesis.
 
-**Before reading, output a reading plan to the conversation:**
+Output the reading plan to the conversation before reading files:
 
 ```
 ## Reading plan
 
-Approach: <one sentence on how you'll answer this question — e.g. "Comparing X and Y across latency, cost, and ease of use">
+Approach: <one sentence on how you'll answer — fallback synthesis from wiki/raw>
 
 Selected articles:
-- `<path>` — <one phrase: why this is relevant>
 - `<path>` — <one phrase: why this is relevant>
 - ...
 ```
 
-Then read each selected article in full. Note any `[[WikiLink]]` references to other articles not already in your selection — if those links look highly relevant, read those too (up to the 15-article cap). If you add articles after the initial plan, append them to the reading plan output with a `(+ followed link)` note.
+Then read each selected article in full. Note any `[[WikiLink]]` references to other articles not already in your selection — if highly relevant, read those too (up to the 15-article cap). Append added articles to the reading plan with a `(+ followed link)` note.
 
-If fewer than 3 relevant wiki articles exist for the question, proceed to Step 3. Otherwise, skip Step 3.
+If fewer than 3 relevant wiki articles exist, also read `<PROJECT_DIR>/raw/INDEX.md` and select up to 5 raw source files whose titles or slugs are relevant. Read them.
 
-## Step 3: Supplement from raw/ (when coverage is thin)
-
-Read `<PROJECT_DIR>/raw/INDEX.md`.
-
-Select up to 5 raw source files whose titles or slugs are relevant to the question. Read them. Use their content to supplement the answer, and note in the Gaps section that these raw docs have not yet been compiled into wiki articles.
-
-## Step 4: Determine output format
+**Synthesize the answer:**
 
 Choose the format that best serves the question type:
 
@@ -76,44 +199,18 @@ Choose the format that best serves the question type:
 | Architectural ("how does X work", "what's the structure of Y") | Mermaid diagram followed by explanation |
 | Synthesis ("what have I learned about X", "summarize X") | Full structured article with sections |
 
-## Step 5: Synthesize the answer
+Rules:
+- First paragraph: direct answer. Do not bury the lede.
+- Tag **every** factual claim `[synthesis]` inline immediately after the sentence — no footnotes are emitted in fallback mode.
+- Surface tradeoffs and contradictions if two sources disagree; name both sources explicitly.
+- Never fabricate — state gaps rather than filling from general knowledge.
 
-Write the answer using the chosen format. Rules:
-
-- **First paragraph**: direct answer. Do not bury the lede with background.
-- **Cite with WikiLinks**: every claim drawn from a specific wiki article must include a `[[slug]]` reference. Do not cite raw/ files with WikiLinks — reference them as `raw/slug.md`.
-- **Surface tradeoffs and contradictions**: if two articles disagree on a point, name both and state the disagreement explicitly. Do not paper over conflicts.
-- **Prefer synthesis over quoting**: paraphrase and connect ideas; do not transcribe article excerpts verbatim.
-- **Never fabricate**: if the wiki does not cover something, state that gap in the Gaps section rather than filling it from general knowledge.
-
-Before the Gaps section, end every answer with a **Sources Consulted** section:
+Sources Consulted section uses the same structure as Step 4 (list every file read). Gaps section must include:
 
 ```
-## Sources Consulted
-
-| Source | What it contributed |
-|--------|---------------------|
-| [[slug]] | <one line: the key fact, argument, or data point this article provided> |
-| raw/slug.md | <one line: what this raw doc added> |
-| ... | ... |
+Answer sourced from AI summaries only — no chunked articles available for this topic.
+Run /digest on relevant URLs to enable cited answers.
 ```
-
-List every article actually read — not just those cited in the body. If an article was read but added nothing useful, include it with "read but not relevant to this question."
-
-Then end every answer — regardless of format — with this section:
-
-```
-## Gaps
-
-What the wiki is missing on this topic:
-
-- <specific gap>: run `/digest` to find new articles, or `wiki:ingest <url>` to add a specific source.
-- <another gap>: ...
-
-_If coverage looks sufficient, no action needed._
-```
-
-If there are no meaningful gaps, write: `_The wiki's coverage on this topic appears sufficient for the current goal._`
 
 ## Step 6: Save to wiki/qa/
 
@@ -121,25 +218,23 @@ Generate a slug from the question: lowercase, spaces and punctuation replaced wi
 
 Write the answer to `<PROJECT_DIR>/wiki/qa/<slug>.md` with this frontmatter:
 
-```
+```yaml
 ---
 title: <question, as asked>
 date: <YYYY-MM-DD>
 type: qa
 sources:
-  - <wiki article slug>
-  - <wiki article slug>
+  - <article_slug>
+  - <article_slug>
   - ...
 ---
 ```
 
-Follow the frontmatter with the full synthesized answer from Step 5.
-
-If a Q&A file with the same slug already exists, overwrite it — the new answer supersedes the old one.
+Follow the frontmatter with the full answer. If a Q&A file with the same slug already exists, overwrite it — the new answer supersedes the old one.
 
 ## Step 7: Update wiki/INDEX.md
 
-Read `<PROJECT_DIR>/wiki/INDEX.md`. Locate a `## Q&A` section. If no such section exists, append one at the end of the file.
+Read `<PROJECT_DIR>/wiki/INDEX.md`. Locate the `## Q&A` section. If no such section exists, append one at the end of the file.
 
 Append one line under `## Q&A`:
 
@@ -147,16 +242,15 @@ Append one line under `## Q&A`:
 - [[qa/<slug>]] — <question, as asked> — <YYYY-MM-DD>
 ```
 
-Do not duplicate the entry if the same slug already appears in the Q&A section — replace the existing line with the updated date.
+If the same slug already appears in the Q&A section, replace the existing line with the updated date.
 
 ## Output
 
-After saving the file, display the full synthesized answer in the conversation (do not make the user open the file to see the answer). Then report:
+After saving the file, display the full answer in conversation (do not make the user open the file). Then report:
 
 ```
 Saved to <PROJECT_DIR>/wiki/qa/<slug>.md — appended to wiki/INDEX.md.
-Sources read: N wiki articles, N raw docs.
-Articles: <comma-separated list of slugs read>
+Sources: N chunks retrieved, N wiki articles read (fallback).
 ```
 
-If any article read fails (file not found, etc.), note it and continue — do not abort the answer for a single missing file.
+If any file read fails (not found, etc.), note it and continue — do not abort for a single missing file.
