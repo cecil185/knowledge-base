@@ -17,4 +17,12 @@ eval-dry variant="v1":
 eval-fixtures:
     python3 scripts/eval_digest.py --fixtures --dry-run
 
+# Append new examples to evals/digest/labels.jsonl from Linear ticket state.
+# Requires LINEAR_API_KEY (https://linear.app/settings/account/security).
+sync-labels project="Data AI Engineering":
+    python3 scripts/sync_labels.py --project "{{project}}"
+
+sync-labels-dry project="Data AI Engineering":
+    python3 scripts/sync_labels.py --project "{{project}}" --dry-run
+
 ci: garden test

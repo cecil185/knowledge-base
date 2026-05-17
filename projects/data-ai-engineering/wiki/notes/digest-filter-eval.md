@@ -114,7 +114,18 @@ Reports are written to `evals/digest/runs/` and committed alongside code so the 
 
 ## Labeling new examples
 
-When new digest runs produce candidates, append them to `labels.jsonl` after deciding keep/drop. Set `keep` to the decision you made, `labeled_at` to today's date, and `linear_id` to the corresponding ticket. Leave `unfetchable` out (defaults to false). After adding ≥10 new examples, re-run the eval to check for drift.
+Use the sync script — it reads ticket state from Linear and appends any URLs not already in `labels.jsonl`. The keep/drop derivation is the same rule used to build the seed set:
+
+- Canceled with `delete-from-wiki` label → `keep=false`
+- Otherwise → `keep=true`
+
+```bash
+export LINEAR_API_KEY=lin_api_...          # one-time setup
+just sync-labels-dry                        # preview what would be added
+just sync-labels                            # actually append
+```
+
+The auto-filled `reason` field is generic ("Auto-synced from Linear …") — edit it to capture the *why* of the keep/drop decision before committing. That nuance is what makes the labelled set valuable later when investigating disagreements.
 
 If an article is 404 or paywalled at eval time, add `"unfetchable": true` — it will be excluded from metrics but kept in the file for traceability.
 
