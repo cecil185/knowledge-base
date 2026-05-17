@@ -17,6 +17,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Install pytest
+        run: pip install pytest
+
       - name: Run eval_digest tests
         run: python3 -m pytest scripts/test_eval_digest.py -v
 
