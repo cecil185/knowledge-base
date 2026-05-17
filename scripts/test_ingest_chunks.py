@@ -215,6 +215,32 @@ def test_paywall_skip():
 
 
 # ---------------------------------------------------------------------------
+# test_frontmatter_stripped
+# ---------------------------------------------------------------------------
+
+def test_frontmatter_stripped():
+    """YAML frontmatter is not inserted as a chunk row."""
+    frontmatter = "---\nurl: https://example.com/test\nfetched: 2026-05-17\ntitle: Test Article\nunfetched: false\n---"
+    body = f"{frontmatter}\n\nFirst real paragraph.\n\nSecond real paragraph."
+    with tempfile.TemporaryDirectory() as tmp:
+        project_dir = Path(tmp)
+
+        ic.ingest(
+            slug="fm-article",
+            url="https://example.com/test",
+            project_dir=project_dir,
+            body=body,
+        )
+
+        rows = _get_rows(_db_path(project_dir), "fm-article")
+        assert len(rows) == 2
+        texts = [r["text"] for r in rows]
+        assert all("---" not in t for t in texts), "frontmatter leaked into chunks"
+        assert texts[0] == "First real paragraph."
+        assert texts[1] == "Second real paragraph."
+
+
+# ---------------------------------------------------------------------------
 # Simple test runner (no pytest required)
 # ---------------------------------------------------------------------------
 
@@ -228,6 +254,7 @@ def _run_tests():
         test_empty_paragraphs_skipped,
         test_fts_queryable,
         test_paywall_skip,
+        test_frontmatter_stripped,
     ]
 
     passed = failed = 0

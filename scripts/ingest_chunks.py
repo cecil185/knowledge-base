@@ -14,6 +14,7 @@ Requirements:
 """
 
 import argparse
+import re
 import sqlite3
 import sys
 from pathlib import Path
@@ -45,6 +46,11 @@ CREATE VIRTUAL TABLE IF NOT EXISTS chunks_fts
 # ---------------------------------------------------------------------------
 # Core logic
 # ---------------------------------------------------------------------------
+
+def _strip_frontmatter(text: str) -> str:
+    """Remove YAML frontmatter (--- ... ---) from the top of a file."""
+    return re.sub(r"^---\n.*?\n---\n*", "", text, count=1, flags=re.DOTALL)
+
 
 def _split_paragraphs(body: str) -> list[str]:
     """Split on double-newlines, keeping only non-empty paragraphs (stripped)."""
@@ -88,7 +94,7 @@ def ingest(slug: str, url: str, project_dir: Path, body: str) -> int:
 
     _ensure_schema(conn)
 
-    paragraphs = _split_paragraphs(body)
+    paragraphs = _split_paragraphs(_strip_frontmatter(body))
     if not paragraphs:
         conn.close()
         return 0
