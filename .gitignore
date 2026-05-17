@@ -2,6 +2,7 @@
 .vscode/settings.json
 .mcp.json
 
+/../worktrees/
 scripts/__pycache__/*
-.gtrconfig
+*.pyc
 .claude/worktrees/*

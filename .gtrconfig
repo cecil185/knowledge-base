@@ -1,0 +1,17 @@
+[worktrees]
+    dir = ../worktrees
+
+[copy]
+    include = .env
+    include = .env.local
+    include = *.local.md
+    include = .claude/*.local.md
+
+[hook]
+    postCreate =
+
+[editor]
+    default = code
+
+[ai]
+    default = claude
