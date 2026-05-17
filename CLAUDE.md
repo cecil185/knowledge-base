@@ -1,4 +1,5 @@
 Personal learning system. Discovers, filters, and synthesizes tech articles into a queryable knowledge base — with Linear for tracking and a local wiki for synthesis.
+**Before proposing features, refactors, or scope changes, read [PURPOSE.md](./PURPOSE.md).** It defines what this project is for (agentic goal-aware content pipeline + AI engineering portfolio) and explicitly what to avoid (slick UI, generic RAG, building for other users).
 
 ## Linear
 
