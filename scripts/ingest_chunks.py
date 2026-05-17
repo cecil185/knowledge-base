@@ -107,6 +107,11 @@ def ingest(slug: str, url: str, project_dir: Path, body: str) -> int:
             (slug, idx, text, char_start, char_end, url),
         )
 
+    # Rebuild FTS index so chunks_fts MATCH queries reflect current rows.
+    # chunks_fts is a content table (content=chunks), so it does not auto-update
+    # on INSERT/DELETE; a full rebuild is the canonical way to sync it.
+    conn.execute("INSERT INTO chunks_fts(chunks_fts) VALUES('rebuild')")
+
     conn.commit()
     count = len(offsets)
     conn.close()

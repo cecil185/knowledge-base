@@ -167,6 +167,34 @@ def test_empty_paragraphs_skipped():
 
 
 # ---------------------------------------------------------------------------
+# test_fts_queryable
+# ---------------------------------------------------------------------------
+
+def test_fts_queryable():
+    """FTS5 index is populated so MATCH queries return results."""
+    body = "Machine learning transforms data.\n\nNeural networks use backpropagation."
+    with tempfile.TemporaryDirectory() as tmp:
+        project_dir = Path(tmp)
+
+        ic.ingest(
+            slug="fts-article",
+            url="https://example.com/fts",
+            project_dir=project_dir,
+            body=body,
+        )
+
+        db = _db_path(project_dir)
+        conn = sqlite3.connect(db)
+        rows = conn.execute(
+            "SELECT text FROM chunks_fts WHERE chunks_fts MATCH 'neural'"
+        ).fetchall()
+        conn.close()
+
+        assert len(rows) == 1
+        assert "Neural" in rows[0][0]
+
+
+# ---------------------------------------------------------------------------
 # test_paywall_skip
 # ---------------------------------------------------------------------------
 
@@ -198,6 +226,7 @@ def _run_tests():
         test_char_offsets,
         test_idempotent,
         test_empty_paragraphs_skipped,
+        test_fts_queryable,
         test_paywall_skip,
     ]
 

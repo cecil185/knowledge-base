@@ -25,6 +25,8 @@ Skills that need the active project read this table to resolve the slug → Line
 
 **Article URL is the identity key** across all stores:
 - `raw/<slug>.md` — frontmatter `url:` field holds the canonical URL
+- `articles/<slug>.md` — full article text (YAML frontmatter + raw body); `unfetched: true` stub when paywall
+- `chunks.sqlite` — paragraph-level chunk store with FTS5 index; populated by `scripts/ingest_chunks.py`
 - Linear ticket — URL appears as the first line of the ticket description
 - `check-duplicate` uses URL (normalised: no trailing slash, no `utm_*` params, scheme-agnostic) to detect duplicates across both stores
 
@@ -39,11 +41,15 @@ knowledge-base/
       goal.md          — learning goal (managed by /goal-refine)
       sources.md       — blog sources list (managed by /refine-sources)
       raw/             — AI-analyzed article summaries with frontmatter metadata (one .md per article)
+      articles/        — full article text files (YAML frontmatter + raw body); one .md per article
+      chunks.sqlite    — paragraph-level chunk store with FTS5 index (populated by ingest_chunks.py)
       wiki/            — compiled knowledge base (concepts, tools, synthesis)
     applied-ai/
       goal.md
       sources.md
       raw/
+      articles/
+      chunks.sqlite
       wiki/
   scripts/             — utility shell scripts
   .claude/             — Claude Code settings (skills live here)

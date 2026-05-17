@@ -42,7 +42,8 @@ If the fetch fails or the content appears to be a paywall or login wall (thin co
    Fetch failed: <reason — paywalled / fetch error / empty response>.
    Labels and raw/ not updated.
    ```
-2. Stop. Leave all labels unchanged.
+2. Run Step 5 (write `unfetched: true` stub only — see below).
+3. Stop. Leave all labels unchanged. Do not proceed to Steps 2–4.
 
 ## Step 2: Single-pass extraction and summary
 
@@ -116,13 +117,15 @@ Run the `save-article-raw` skill with:
 
 ## Step 5: Store full article text and chunks
 
-Skip this step entirely if the article body was loaded from an existing raw file in Step 1 (already processed).
+Skip this step entirely if the article body was loaded from an existing raw file in Step 1 (already processed — `articles/` file and chunks already exist).
 
 ### 5a: Determine the article slug
 
 Use the same slug derivation as `raw/`: lowercase the title, replace spaces and special characters with hyphens, truncate to 60 characters. This must match the slug used in Step 4 for `save-article-raw`.
 
 ### 5b: Write the full article file
+
+**Normal path** (fetch succeeded):
 
 Write `<PROJECT_DIR>/articles/<article-slug>.md` with this structure:
 
@@ -140,7 +143,7 @@ unfetched: false
 - Create `<PROJECT_DIR>/articles/` directory if absent.
 - `<full article text>` is the raw text retrieved by WebFetch in Step 1b — not the structured extraction (Output A), but the original article body.
 
-**On fetch failure / paywall** (already detected in Step 1b):
+**Paywall / fetch failure path** (Step 1b detected no usable content):
 - Write `<PROJECT_DIR>/articles/<article-slug>.md` stub with `unfetched: true` and empty body:
   ```
   ---
@@ -150,7 +153,7 @@ unfetched: false
   unfetched: true
   ---
   ```
-- Skip the `ingest_chunks.py` call — no rows to insert.
+- Skip Step 5c — no rows to insert.
 
 ### 5c: Call ingest_chunks.py
 
