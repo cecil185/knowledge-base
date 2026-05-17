@@ -1,3 +1,7 @@
 .claude/settings.local.json
 .vscode/settings.json
 .mcp.json
+
+scripts/__pycache__/*
+.gtrconfig
+.claude/worktrees/*

@@ -1,0 +1,35 @@
+# Digest Filter Variant Registry
+#
+# Each variant ties a filter prompt version to a goal.md snapshot.
+# The eval runner references these by name in each run report.
+#
+# Fields:
+#   name:        Short identifier used in run report filenames (e.g. "v1")
+#   description: One-line summary of what changed in this variant
+#   prompt_file: Path to the skill file containing the filter prompt
+#                (the runner reads this — change it to A/B test a different prompt)
+#   goal_hash:   SHA256 of goal.md at the time this variant was defined.
+#                Run: shasum -a 256 projects/data-ai-engineering/goal.md
+#   created_at:  ISO date
+#   notes:       Free-text rationale or A/B conclusion (populated after a run)
+
+variants:
+  - name: v1
+    description: "Baseline — production filter as of 2026-05-10; strict auto-ticket, err toward threshold"
+    prompt_file: ".claude/skills/filter-articles/SKILL.md"
+    goal_hash: "a9b74950fb8b"
+    created_at: "2026-05-10"
+    notes: |
+      Baseline variant. Uses the current filter-articles SKILL.md verbatim.
+      Key characteristics:
+      - Three buckets: drop / auto-ticket / threshold
+      - No full article fetch; title + snippet + source only
+      - High-relevance signals from goal.md drive auto-ticket
+      - Strict: false positives cost more than false negatives
+
+      First live run pending — set ANTHROPIC_API_KEY and run `just eval`
+      to establish the baseline metrics.
+
+  # Add new variants below as you iterate. Each new variant should point to
+  # its own copy of the filter prompt (e.g. .claude/skills/filter-articles/SKILL.v2.md)
+  # so the runner picks up the change via the prompt_file field.
