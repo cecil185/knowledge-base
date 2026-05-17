@@ -6,9 +6,9 @@ _Last updated: 2026-05-17_
 
 ## What this is
 
-The `/digest` skill curates technical articles by running candidate URLs through an LLM filter. The filter reads a `goal.md` — a four-field statement of what I'm trying to learn — and classifies each article into three buckets: `auto-ticket` (create a Linear ticket immediately), `threshold` (show to me for a quick yes/no), or `drop` (discard silently).
+The `/digest` skill curates technical articles by running candidate URLs through an LLM filter. The filter reads a `goal.md` — a four-field statement of what I'm trying to learn — and classifies each article into three buckets: `auto-ticket` (create a Linear ticket immediately), `threshold` (show me for a quick yes/no), or `drop` (discard silently).
 
-This document tells the story of building a **labelled-eval harness** for that filter: why it matters, how it was built, what we measured, and what changed.
+This document tells the story of building a **labelled-eval harness** for that filter: why it matters, how it was built, and how it will grow.
 
 ---
 
@@ -57,66 +57,31 @@ When the filter becomes more complex — multi-step reasoning, chain-of-thought 
   "keep": true,
   "reason": "One sentence explaining the keep/drop decision",
   "labeled_at": "2026-05-17",
+  "linear_id": "CC-9",
   "unfetchable": false
 }
 ```
 
-**Labeling process:** Labels were assigned by hand from past digest runs. For each article, I asked: "If I'd seen this in my feed, would I have wanted it in my knowledge base?" The answer was driven by whether the article contained a concrete technique, tool, or case study I could apply to shipping faster with AI assistance — matching the goal's high-relevance signals.
+**Labeling process:** The seed set was reconstructed from the project's actual Linear ticket history (CC-9 through CC-28). The keep/drop decision was derived directly from each ticket's final state:
 
-**Current count:** 60 labelled examples across 7 weeks of digest runs (2026-03-29 through 2026-05-10).
+- `keep=true` if the article ticket remained in the project (status Done or In Progress without the `delete-from-wiki` label) — meaning the filter's decision to surface it was validated by the operator after reading
+- `keep=false` if the ticket was Canceled with the `delete-from-wiki` label — meaning the filter surfaced something the operator ultimately judged off-goal after reading
 
-**Class balance:** 30 keep / 28 drop / 2 unfetchable. Near-balanced by design — an imbalanced eval set flatters recall at the expense of precision.
+This is real signal, not synthetic: every label corresponds to an article I actually read or skimmed and made a keep/discard decision on.
+
+**Current count:** 18 examples (11 keep / 7 drop). Below the ideal ≥50 — the system has only been running a few weeks — but it's an honest starting point. The set will grow each digest run as new candidates get surfaced and decided.
 
 **URL deduplication:** The runner normalises URLs (strips trailing slash, strips `utm_*` params) before dedup. If a URL appears twice, the later label wins.
 
 ---
 
-## Variants tried
+## Variants
 
-### v1 — Baseline (2026-05-10)
+The variant registry lives at `evals/digest/variants.yaml`. Each variant ties a filter-prompt file to a `goal.md` hash.
 
-The production filter as shipped: three-bucket classification, strict auto-ticket gate, err toward `threshold` when uncertain.
+Currently there is one variant (`v1`) — the production baseline. Adding `v2` is a one-line YAML change pointing to a different prompt file: the runner will automatically use that variant's prompt when invoked with `--variant v2`.
 
-**Result:** Precision 0.722 / Recall 0.867 / **F1 0.788**
-
-**Key failure mode:** False positives clustered around trusted sources publishing off-goal content. Databricks, Airbnb Engineering, and Fly.io publishing platform/infra articles without an AI-workflow angle were slipping through as `threshold` items because the filter over-weighted source trust relative to topic relevance.
-
-### v2 — Tighter auto-ticket gate (2026-05-17)
-
-Added an explicit gate: the article must show evidence of *measurably reducing* human-review burden, not just describe AI coding in general.
-
-**Result:** Precision 0.813 / Recall 0.833 / **F1 0.823**
-
-**Delta vs v1:** F1 +0.035, Precision +0.091, Recall -0.034. The precision gain came from cutting 4 infrastructure false positives. The recall dip came from 1 new false negative (Dagster asset checks, which is genuinely borderline).
-
-**Conclusion:** v2 adopted as production baseline.
-
----
-
-## Metric trajectory
-
-| Date | Variant | Precision | Recall | F1 |
-|------|---------|-----------|--------|----|
-| 2026-05-10 | v1 | 0.722 | 0.867 | 0.788 |
-| 2026-05-17 | v2 | 0.813 | 0.833 | 0.823 |
-
-F1 is moving in the right direction. The goal is to get above 0.85 — at that point the filter is good enough that I trust auto-tickets without spot-checking.
-
----
-
-## Remaining disagreements
-
-After v2, 5 false negatives and 6 false positives remain. Patterns:
-
-**Persistent false negatives:**
-- Trusted author, thin snippet (Eugene Yan, Martin Fowler) → filter uncertain, labels say keep
-- Unfamiliar source with good content (jnxr.io) → filter drops on source signal
-
-**Persistent false positives:**
-- Trusted source + off-goal topic (Databricks ops, InfoQ platform releases) → `threshold` items surfacing to me unnecessarily
-- Vendor SEO pattern not reliably detected when framing is plausible ("Complete Guide to E2E Testing")
-
-**Next hypothesis (v3):** Add an explicit "must have AI workflow angle" drop signal for pure platform/infra content from trusted data-engineering sources. Also consider a mini-allowlist of trusted personal blogs that should get benefit of the doubt even with thin snippets.
+**First live run is pending** — once an `ANTHROPIC_API_KEY` is set and `just eval` is run, the baseline metrics will be recorded in `evals/digest/runs/`. From there each prompt change can be A/B tested against the baseline.
 
 ---
 
@@ -129,17 +94,18 @@ pip install anthropic pyyaml
 # Set your API key
 export ANTHROPIC_API_KEY=sk-...
 
-# Run against full labels
-python3 scripts/eval_digest.py --variant v2
+# Run against full labels (writes report to evals/digest/runs/)
+just eval                 # variant=v1 by default
+just eval variant=v2      # if v2 exists in variants.yaml
 
-# Dry-run (no LLM calls, mirrors labels as predictions)
-python3 scripts/eval_digest.py --variant v2 --dry-run
+# Dry-run (no LLM calls, mirrors labels as predictions — sanity-checks report format)
+just eval-dry
 
 # Sanity-check on fixture set (5 known examples)
-python3 scripts/eval_digest.py --fixtures --dry-run
+just eval-fixtures
 
-# Run tests
-python3 scripts/test_eval_digest.py
+# Run unit tests
+just test
 ```
 
 Reports are written to `evals/digest/runs/` and committed alongside code so the metric trajectory is version-controlled.
@@ -148,7 +114,7 @@ Reports are written to `evals/digest/runs/` and committed alongside code so the 
 
 ## Labeling new examples
 
-When new digest runs produce candidates, append them to `labels.jsonl` with `keep` set to the decision you made, and `labeled_at` set to today's date. Leave `unfetchable` out (defaults to false). After adding ≥10 new examples, re-run the eval to check for drift.
+When new digest runs produce candidates, append them to `labels.jsonl` after deciding keep/drop. Set `keep` to the decision you made, `labeled_at` to today's date, and `linear_id` to the corresponding ticket. Leave `unfetchable` out (defaults to false). After adding ≥10 new examples, re-run the eval to check for drift.
 
 If an article is 404 or paywalled at eval time, add `"unfetchable": true` — it will be excluded from metrics but kept in the file for traceability.
 
@@ -160,7 +126,8 @@ This harness demonstrates:
 
 1. **Eval-driven development for LLM systems** — treating a prompt as a versioned artifact with measurable quality, not a black box
 2. **Lightweight but rigorous methodology** — flat files, committed reports, arithmetic metrics; no framework overhead
-3. **Iterative prompt engineering** — A/B comparison with a written conclusion, not just vibes
+3. **Iterative prompt engineering** — variant registry + A/B comparison built in from day one
 4. **Awareness of the professional eval landscape** — Promptfoo, Inspect, DeepEval surveyed and deliberately not adopted for v1
+5. **Honest reporting** — small real seed set rather than a fabricated large one; the methodology stands even when the data is sparse
 
 The filter is a microcosm of the larger challenge in AI-assisted software: how do you know if a change to your AI system made it better or worse? The same pattern (labelled set + replay runner + metric report) applies to code review guardrails, test generation quality, and incident triage accuracy.

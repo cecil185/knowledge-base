@@ -84,3 +84,7 @@ Each project's `goal.md` has four fields: **What**, **Why**, **Horizon**, **Succ
 ## Sources
 
 Each project's `sources.md` lists blog sources beyond HN. HN is always included. Run `/refine-sources` to prune or add sources for the active project.
+
+## Filter eval
+
+The `/digest` filter has a labelled-eval harness under `evals/digest/`. Labels live in `evals/digest/labels.jsonl` (URL + keep/drop derived from Linear ticket outcomes), variants in `evals/digest/variants.yaml`, reports in `evals/digest/runs/`. Run `just eval` (requires `ANTHROPIC_API_KEY`) or `just eval-dry` to sanity-check. Full writeup: [projects/data-ai-engineering/wiki/notes/digest-filter-eval.md](projects/data-ai-engineering/wiki/notes/digest-filter-eval.md).

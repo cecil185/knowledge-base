@@ -19,7 +19,6 @@ Environment:
 import argparse
 import hashlib
 import json
-import os
 import re
 import subprocess
 import sys
@@ -468,14 +467,15 @@ def main():
     )
     variants_file = ROOT / "evals/digest/variants.yaml"
     goal_path = ROOT / f"projects/{args.project}/goal.md"
-    prompt_file_rel = ".claude/skills/filter-articles/SKILL.md"
-    prompt_path = ROOT / prompt_file_rel
     runs_dir = ROOT / "evals/digest/runs"
 
     if not goal_path.exists():
         sys.exit(f"goal.md not found: {goal_path}\nRun /goal-refine first.")
 
     variant = load_variant(variants_file, args.variant)
+    prompt_path = ROOT / variant["prompt_file"]
+    if not prompt_path.exists():
+        sys.exit(f"Variant '{args.variant}' prompt_file not found: {prompt_path}")
     prompt_body = load_filter_prompt(prompt_path)
     goal_text = goal_path.read_text()
     goal_hash = hash_file(goal_path)
@@ -505,10 +505,12 @@ def main():
             ))
     else:
         total = len([e for e in examples if not e.unfetchable])
-        for i, ex in enumerate(examples, 1):
+        processed = 0
+        for ex in examples:
             if ex.unfetchable:
                 continue
-            print(f"  [{i}/{total}] {ex.title[:60]}…")
+            processed += 1
+            print(f"  [{processed}/{total}] {ex.title[:60]}…")
             pred = call_filter(ex, prompt_body, goal_text)
             if pred.error:
                 print(f"    [error] {pred.error}", file=sys.stderr)
