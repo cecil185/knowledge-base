@@ -114,9 +114,63 @@ Run the `save-article-raw` skill with:
 - `type` — classify as `article`, `paper`, `repo`, or `docs`
 - `tags` — `[]`
 
+## Step 5: Store full article text and chunks
+
+Skip this step entirely if the article body was loaded from an existing raw file in Step 1 (already processed).
+
+### 5a: Determine the article slug
+
+Use the same slug derivation as `raw/`: lowercase the title, replace spaces and special characters with hyphens, truncate to 60 characters. This must match the slug used in Step 4 for `save-article-raw`.
+
+### 5b: Write the full article file
+
+Write `<PROJECT_DIR>/articles/<article-slug>.md` with this structure:
+
+```
+---
+url: <article URL>
+fetched: <YYYY-MM-DD today>
+title: <article title>
+unfetched: false
+---
+
+<full article text>
+```
+
+- Create `<PROJECT_DIR>/articles/` directory if absent.
+- `<full article text>` is the raw text retrieved by WebFetch in Step 1b — not the structured extraction (Output A), but the original article body.
+
+**On fetch failure / paywall** (already detected in Step 1b):
+- Write `<PROJECT_DIR>/articles/<article-slug>.md` stub with `unfetched: true` and empty body:
+  ```
+  ---
+  url: <article URL>
+  fetched: <YYYY-MM-DD today>
+  title: <article title>
+  unfetched: true
+  ---
+  ```
+- Skip the `ingest_chunks.py` call — no rows to insert.
+
+### 5c: Call ingest_chunks.py
+
+After writing the articles file successfully (unfetched: false), call:
+
+```
+python3 /Users/cecil/Code/me/knowledge-base/scripts/ingest_chunks.py \
+  --slug <article-slug> \
+  --url <article-url> \
+  --project-dir <PROJECT_DIR> \
+  --file <PROJECT_DIR>/articles/<article-slug>.md
+```
+
+This creates or updates `<PROJECT_DIR>/chunks.sqlite` with paragraph-level chunks for the article.
+
 ## Output
 
 Report:
 - Ticket ID and Linear URL
 - Whether the summary comment was posted successfully
 - Path to the saved raw file, or reason for skipping/failure
+- Path to `articles/<article-slug>.md` written (or stub written on paywall)
+- Number of chunks ingested into `chunks.sqlite`, or "skipped" if paywall/already processed
