@@ -1,12 +1,12 @@
 ---
 name: article-critique
-description: On-demand deep review of a single article URL. Rates it, creates a Linear ticket if worth it, reads in full, and posts a summary comment.
+description: On-demand deep review of a single article URL. Rates it and posts a summary comment.
 model: claude-opus-4-6
 effort: medium
 ---
 # Article Critique
 
-On-demand review of a single article. Use when given a URL directly — not through `/digest`. Produces a scored rating report, creates a Linear ticket for qualifying articles, and runs a full read on anything that clears the bar.
+On-demand review of a single article. Use when given a URL directly — not through `/digest`. Produces a scored rating report.
 
 ## Steps
 
@@ -57,19 +57,4 @@ Thesis: one sentence — the actual claim under the padding.
 Bottom line: 1-2 sentences — read, skim, or drop and why.
 ```
 
-One clause means one clause. No hedging. If it's hype, say it's hype.
-
-### 6. Ticket and read (rating ≥ 7 only)
-
-If the total score is below 7, stop after the report. No ticket.
-
-If the total score is 7 or higher:
-
-1. Search the Linear Wiki project for an existing ticket whose description or title contains this exact URL. If a duplicate exists, report the existing ticket ID and stop — do not create a second ticket.
-2. Create a Linear ticket in the Wiki project:
-   - Title: article title
-   - Description: URL + one-sentence thesis
-   - Labels: `human-not-read`
-3. Run the `read-article` skill, passing the new ticket ID and URL. It will fetch full content, write to `raw/`, post a TLDR / Goal relation / How to apply to Linear ticket.
-
-Do not run `wiki:compile` automatically here — that is the digest pipeline's responsibility. If the user wants the wiki updated after a critique, they can run `/wiki:compile` manually.
+Be decisive in your classification. If it's hype, say it's hype.

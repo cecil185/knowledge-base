@@ -8,7 +8,7 @@ Personal learning system. Discovers, filters, and synthesizes tech articles into
 |---------|-------------|
 | `/digest [slug]` | Full pipeline: discover → filter → ticket → read → compile wiki |
 | `/add-article <url>` | Manually add one article: ticket → read → compile wiki |
-| `/article-critique <url>` | Score an article; ticket + read if score ≥ 7 |
+| `/article-critique <url>` | On-demand deep review of a single article |
 | `/wiki:ingest <url\|topic>` | Save a URL or topic to `raw/` without ticketing |
 | `/wiki:compile` | Synthesize `raw/` into `wiki/` (safe to re-run) |
 | `/wiki:qa <question>` | Query the compiled wiki |
