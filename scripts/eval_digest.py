@@ -42,6 +42,7 @@ class LabeledExample:
     keep: bool
     reason: str
     labeled_at: str
+    snippet: str = ""
     unfetchable: bool = False
 
 
@@ -71,7 +72,12 @@ class RunResult:
 
 def compute_metrics(examples: list[LabeledExample], predictions: list[Prediction]):
     pred_map = {p.url: p for p in predictions}
-    tp = fp = fn = tn = 0
+    # Symmetric fractional scoring by prediction confidence:
+    #   threshold   = 1.0 TP on keep,  0.5 FP on drop  (calibrated — user reviews it)
+    #   auto-ticket = 0.5 TP on keep,  1.0 FP on drop  (high stakes — bypasses user)
+    tp: float = 0.0
+    fp: float = 0.0
+    fn = tn = 0
     disagreements = []
 
     for ex in examples:
@@ -81,12 +87,12 @@ def compute_metrics(examples: list[LabeledExample], predictions: list[Prediction
         if pred is None or pred.error:
             continue
         if ex.keep and pred.predicted_keep:
-            tp += 1
+            tp += 1.0 if pred.raw_bucket == "threshold" else 0.5
         elif ex.keep and not pred.predicted_keep:
             fn += 1
             disagreements.append((ex, pred, "false_negative"))
         elif not ex.keep and pred.predicted_keep:
-            fp += 1
+            fp += 1.0 if pred.raw_bucket == "auto-ticket" else 0.5
             disagreements.append((ex, pred, "false_positive"))
         else:
             tn += 1
@@ -124,14 +130,8 @@ def hash_file(path: Path) -> str:
 # LLM filter call
 # ---------------------------------------------------------------------------
 
-def call_filter(article: LabeledExample, prompt_body: str, goal_text: str) -> Prediction:
-    try:
-        import anthropic
-    except ImportError:
-        sys.exit("anthropic package not installed. Run: pip install anthropic")
-
-    client = anthropic.Anthropic()
-
+def call_filter(article: LabeledExample, prompt_body: str, goal_text: str, model: str, sources_text: str = "") -> Prediction:
+    """Call the filter via the `claude` CLI (uses the user's existing Claude Code session auth)."""
     system = f"""You are the filter-articles classifier for a personal learning digest.
 
 Active project goal.md:
@@ -139,34 +139,57 @@ Active project goal.md:
 {goal_text}
 ---
 
+Active project sources.md (contains the blocklist and trusted sources):
+---
+{sources_text}
+---
+
 {prompt_body}
 """
+    snippet_text = article.snippet if article.snippet else "(not available — classify from title and source only)"
     user = (
         f"Classify this single article. Output ONLY one of: auto-ticket, threshold, or drop — "
         f"followed by a one-sentence reason.\n\n"
         f"Title: {article.title}\n"
         f"URL: {article.url}\n"
         f"Surfaced by: {article.surfaced_by}\n"
-        f"Snippet: (not available — classify from title and source only)"
+        f"Snippet: {snippet_text}"
     )
 
     try:
-        msg = client.messages.create(
-            model="claude-haiku-4-5-20251001",
-            max_tokens=128,
-            system=system,
-            messages=[{"role": "user", "content": user}],
+        result = subprocess.run(
+            [
+                "claude", "-p", user,
+                "--append-system-prompt", system,
+                "--model", model,
+                "--output-format", "text",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=120,
+            check=True,
         )
-        raw = msg.content[0].text.strip().lower()
-    except Exception as e:
+        raw = result.stdout.strip().lower()
+    except subprocess.CalledProcessError as e:
         return Prediction(
             url=article.url,
             title=article.title,
             predicted_keep=False,
             raw_bucket="error",
             llm_reason="",
-            error=str(e),
+            error=f"claude CLI failed (exit {e.returncode}): {e.stderr.strip()[:200]}",
         )
+    except subprocess.TimeoutExpired:
+        return Prediction(
+            url=article.url,
+            title=article.title,
+            predicted_keep=False,
+            raw_bucket="error",
+            llm_reason="",
+            error="claude CLI timeout (120s)",
+        )
+    except FileNotFoundError:
+        sys.exit("`claude` CLI not found on PATH. Install Claude Code or set ANTHROPIC_API_KEY and switch back to the SDK.")
 
     # Parse bucket from response
     bucket = "drop"
@@ -235,8 +258,8 @@ def write_report(result: RunResult, metrics: dict, runs_dir: Path, dry_run: bool
         "",
         "| | Predicted keep | Predicted drop |",
         "|---|---|---|",
-        f"| **Labelled keep** | TP={metrics['tp']} | FN={metrics['fn']} |",
-        f"| **Labelled drop** | FP={metrics['fp']} | TN={metrics['tn']} |",
+        f"| **Labelled keep** | TP={metrics['tp']:.1f} | FN={metrics['fn']} |",
+        f"| **Labelled drop** | FP={metrics['fp']:.1f} | TN={metrics['tn']} |",
         "",
         f"Labelled set: {keep_count} keep, {drop_count} drop",
         f"Skipped (unfetchable): {skip_count}  |  Errors: {error_count}",
@@ -401,6 +424,7 @@ def load_labels(path: Path) -> list[LabeledExample]:
             keep=bool(row.get("keep", False)),
             reason=row.get("reason", ""),
             labeled_at=row.get("labeled_at", ""),
+            snippet=row.get("snippet", ""),
             unfetchable=bool(row.get("unfetchable", False)),
         ))
 
@@ -433,6 +457,18 @@ def load_variant(variants_file: Path, name: str) -> dict:
     sys.exit(f"Variant '{name}' not found. Available: {available}")
 
 
+def load_prompt_body(variant: dict, root: Path) -> str:
+    """Return prompt text, preferring prompt_inline over prompt_file."""
+    if "prompt_inline" in variant:
+        return variant["prompt_inline"].strip()
+    if "prompt_file" in variant:
+        prompt_path = root / variant["prompt_file"]
+        if not prompt_path.exists():
+            sys.exit(f"prompt_file not found: {prompt_path}")
+        return load_filter_prompt(prompt_path)
+    sys.exit(f"Variant '{variant['name']}' has neither prompt_inline nor prompt_file.")
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
@@ -456,6 +492,11 @@ def main():
         help="Print report to stdout instead of writing file; skip LLM calls",
     )
     parser.add_argument(
+        "--model",
+        default="claude-sonnet-4-6",
+        help="Claude model ID to use for filter calls (default: claude-sonnet-4-6)",
+    )
+    parser.add_argument(
         "--fixtures",
         action="store_true",
         help="Run against fixture set instead of full labels (fast sanity check)",
@@ -473,11 +514,12 @@ def main():
         sys.exit(f"goal.md not found: {goal_path}\nRun /goal-refine first.")
 
     variant = load_variant(variants_file, args.variant)
-    prompt_path = ROOT / variant["prompt_file"]
-    if not prompt_path.exists():
-        sys.exit(f"Variant '{args.variant}' prompt_file not found: {prompt_path}")
-    prompt_body = load_filter_prompt(prompt_path)
+    prompt_body = load_prompt_body(variant, ROOT)
+    # variant-level model overrides CLI flag
+    model = variant.get("model", args.model)
     goal_text = goal_path.read_text()
+    sources_path = ROOT / f"projects/{args.project}/sources.md"
+    sources_text = sources_path.read_text() if sources_path.exists() else ""
     goal_hash = hash_file(goal_path)
     goal_snippet = goal_text[:200].replace("\n", " ").strip()
 
@@ -504,17 +546,24 @@ def main():
                 llm_reason="(dry-run: mirrored from label)",
             ))
     else:
-        total = len([e for e in examples if not e.unfetchable])
-        processed = 0
-        for ex in examples:
-            if ex.unfetchable:
-                continue
-            processed += 1
-            print(f"  [{processed}/{total}] {ex.title[:60]}…")
-            pred = call_filter(ex, prompt_body, goal_text)
-            if pred.error:
-                print(f"    [error] {pred.error}", file=sys.stderr)
-            predictions.append(pred)
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        fetchable = [e for e in examples if not e.unfetchable]
+        total = len(fetchable)
+        print(f"  Running {total} filter calls in parallel (max 6 workers, model={model})…")
+        completed = 0
+        with ThreadPoolExecutor(max_workers=6) as pool:
+            futures = {
+                pool.submit(call_filter, ex, prompt_body, goal_text, model, sources_text): ex
+                for ex in fetchable
+            }
+            for fut in as_completed(futures):
+                ex = futures[fut]
+                pred = fut.result()
+                completed += 1
+                print(f"  [{completed}/{total}] {ex.title[:60]}…")
+                if pred.error:
+                    print(f"    [error] {pred.error}", file=sys.stderr)
+                predictions.append(pred)
 
     metrics = compute_metrics(examples, predictions)
 
@@ -522,7 +571,7 @@ def main():
     print(f"  Precision: {metrics['precision']:.3f}")
     print(f"  Recall:    {metrics['recall']:.3f}")
     print(f"  F1:        {metrics['f1']:.3f}")
-    print(f"  TP={metrics['tp']} FP={metrics['fp']} FN={metrics['fn']} TN={metrics['tn']}")
+    print(f"  TP={metrics['tp']:.1f} FP={metrics['fp']:.1f} FN={metrics['fn']} TN={metrics['tn']}")
     print(f"  Disagreements: {len(metrics['disagreements'])}")
 
     result = RunResult(

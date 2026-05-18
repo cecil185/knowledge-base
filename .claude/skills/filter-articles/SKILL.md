@@ -36,7 +36,6 @@ Discard without creating a ticket. Use when any of the following apply:
 - Opinion piece, trend roundup, or "state of X" without concrete technical content
 - Tutorial covering basic/introductory material
 - Likely paywalled (e.g. Bloomberg, WSJ, FT, Harvard Business Review)
-- Duplicate of a concept already obvious from another candidate in this batch
 
 ### auto-ticket
 

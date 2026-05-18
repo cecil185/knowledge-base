@@ -4,32 +4,123 @@
 # The eval runner references these by name in each run report.
 #
 # Fields:
-#   name:        Short identifier used in run report filenames (e.g. "v1")
-#   description: One-line summary of what changed in this variant
-#   prompt_file: Path to the skill file containing the filter prompt
-#                (the runner reads this — change it to A/B test a different prompt)
-#   goal_hash:   SHA256 of goal.md at the time this variant was defined.
-#                Run: shasum -a 256 projects/data-ai-engineering/goal.md
-#   created_at:  ISO date
-#   notes:       Free-text rationale or A/B conclusion (populated after a run)
+#   name:          Short identifier used in run report filenames (e.g. "v1")
+#   description:   One-line summary of what changed in this variant
+#   prompt_inline: The full filter prompt text, embedded here for reproducibility.
+#                  Takes precedence over prompt_file if both are present.
+#   prompt_file:   Fallback: path to a skill file containing the filter prompt.
+#   model:         Claude model ID to use for this variant. Overrides --model CLI flag.
+#                  Leave unset to use the CLI default (claude-sonnet-4-6).
+#   goal_hash:     SHA256 of goal.md at the time this variant was defined.
+#                  Run: shasum -a 256 projects/data-ai-engineering/goal.md
+#   created_at:    ISO date
+#   notes:         Free-text rationale or A/B conclusion (populated after a run)
 
 variants:
   - name: v1
     description: "Baseline — production filter as of 2026-05-10; strict auto-ticket, err toward threshold"
-    prompt_file: ".claude/skills/filter-articles/SKILL.md"
     goal_hash: "a9b74950fb8b"
     created_at: "2026-05-10"
+    prompt_inline: |
+      # filter-articles
+
+      Classify a list of candidate articles into three buckets using only title, source, and snippet — no full article fetching. Classification is driven entirely by the signals in the active project's `goal.md`.
+
+      ## Active project
+
+      Use the `PROJECT_DIR` established by the calling skill (digest). If called directly, determine the active project by reading `CLAUDE.md` and using the **Default project** slug. Set `PROJECT_DIR = projects/<slug>`.
+
+      ## Precondition
+
+      Read `<PROJECT_DIR>/goal.md` before doing anything else.
+
+      If the file does not exist, stop immediately and tell the user:
+
+      > `<PROJECT_DIR>/goal.md` is missing. Run `/goal-refine` first to define your learning goal, then re-run `/digest`.
+
+      The **High-relevance article signals** and **Low-relevance article signals** sections of `goal.md` are the primary classification inputs. The **Reading intent** section provides additional context on what the user wants to get out of articles.
+
+      ## Buckets
+
+      Classify each article into exactly one of:
+
+      ### drop
+
+      Discard without creating a ticket. Use when any of the following apply:
+      - URL host matches a domain in the **Blocklist** section of `<PROJECT_DIR>/sources.md` (case-insensitive, ignore `www.`, match exact or subdomain)
+      - Vendor SEO/marketing post: "Complete Guide to…", "How to QA…", "The Ultimate…" style titles from a vendor's own blog
+      - Title or snippet clearly falls outside the goal's high-relevance signals
+      - Matches one or more low-relevance signals from `goal.md`
+      - Opinion piece, trend roundup, or "state of X" without concrete technical content
+      - Tutorial covering basic/introductory material
+      - Likely paywalled (e.g. Bloomberg, WSJ, FT, Harvard Business Review)
+
+      ### auto-ticket
+
+      Create a Linear ticket automatically without asking the user. Use when **all** of the following are true:
+      - Title + snippet directly and unambiguously matches at least one high-relevance signal
+      - Describes a concrete tool release, benchmark, technique, architecture, or case study — not just commentary about it
+      - Nothing in the snippet suggests low relevance, opinion-only, or introductory content
+      - A trusted source (from `sources.md` or a well-known engineering blog) is a positive signal but not required
+
+      Err on the side of `threshold` when uncertain. False positives here cost the user time.
+
+      ### threshold
+
+      Show to the user with a short summary; create a ticket only if approved. Use when:
+      - The title or source suggests plausible relevance but the snippet is too thin to confirm
+      - The article topic overlaps with the goal but it is unclear whether the depth or angle matches
+      - The source is unfamiliar and quality cannot be inferred from the snippet
+
+      ## Classification rules
+
+      - **Be strict.** A false positive (auto-ticketing something irrelevant) costs more than a false negative (missing something good).
+      - Every article gets exactly one bucket. No "maybe drop / maybe threshold" hedging.
+      - Do not fetch article content. Classification uses only what `search-articles` provided: title, source, snippet, date.
+      - Do not re-order the user's candidate list within a bucket — preserve the order they arrived in.
+
+      ## Output format
+
+      Emit three sections in this order: **auto-ticket**, **threshold**, **drop**.
+
+      ### Auto-ticket
+
+      ```
+      ## Auto-ticket (<count>)
+
+      - **<title>**
+        URL: <url>
+        Reason: <one clause explaining which high-relevance signal it matches>
+      ```
+
+      ### Threshold
+
+      ```
+      ## Threshold (<count>)
+
+      - **<title>**
+        URL: <url>
+        Reason: <one clause explaining the uncertainty>
+        Summary: <1-2 sentences distilling what the article appears to be about, so the user can decide without fetching it>
+      ```
+
+      ### Drop
+
+      ```
+      ## Drop (<count>)
+
+      - **<title>** — <one clause reason>
+      ```
+
+      Drop entries are compact because the user does not need to act on them. Auto-ticket and threshold entries include the URL so downstream steps can use the output directly.
     notes: |
-      Baseline variant. Uses the current filter-articles SKILL.md verbatim.
+      Baseline variant. Uses the filter-articles SKILL.md prompt verbatim (as of 2026-05-10).
       Key characteristics:
       - Three buckets: drop / auto-ticket / threshold
       - No full article fetch; title + snippet + source only
       - High-relevance signals from goal.md drive auto-ticket
       - Strict: false positives cost more than false negatives
+      - auto-ticket scores 0.5 TP (vs threshold 1.0) to penalise overclaiming
 
-      First live run pending — set ANTHROPIC_API_KEY and run `just eval`
-      to establish the baseline metrics.
-
-  # Add new variants below as you iterate. Each new variant should point to
-  # its own copy of the filter prompt (e.g. .claude/skills/filter-articles/SKILL.v2.md)
-  # so the runner picks up the change via the prompt_file field.
+  # Add new variants below as you iterate on the prompt.
+  # Copy prompt_inline from v1, modify as needed, and give it a new name (e.g. v2).

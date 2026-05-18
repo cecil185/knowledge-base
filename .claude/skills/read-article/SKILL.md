@@ -33,17 +33,23 @@ Run both of these simultaneously:
 1. Use WebFetch to retrieve the full article content.
 2. Read `<PROJECT_DIR>/goal.md`.
 
-If the fetch fails or the content appears to be a paywall or login wall (thin content, subscription prompt, no article body):
+### Blocked-fetch handling
 
-1. Post a comment on the Linear ticket:
-   ```
-   ## AI Read — Fetch Failed
+If the fetch fails, returns a paywall/login wall, returns a Cloudflare/anti-bot block, returns truncated or thin content, or otherwise does not yield the full article body:
 
-   Fetch failed: <reason — paywalled / fetch error / empty response>.
-   Labels and raw/ not updated.
+**Do not** attempt to reconstruct the article from web search snippets, cached previews, the article's title and URL, or any other secondary source. A partial or reconstructed read is worse than no read — it gets recorded as if it were a real summary and contaminates the wiki.
+
+Instead:
+
+1. Add the `BLOCKED` label to the Linear ticket (create the label if it doesn't exist). Leave any existing labels in place.
+2. Post a comment on the Linear ticket:
    ```
-2. Run Step 5 (write `unfetched: true` stub only — see below).
-3. Stop. Leave all labels unchanged. Do not proceed to Steps 2–4.
+   ## AI Read — Blocked
+
+   Could not access article in full: <reason — paywalled / Cloudflare block / fetch error / empty response>.
+   No summary written. raw/ and articles/ not updated.
+   ```
+3. Stop. Do not proceed to Steps 2–5. Do not write any raw/ file. Do not write any articles/ stub. Do not call ingest_chunks.
 
 ## Step 2: Single-pass extraction and summary
 
@@ -125,8 +131,6 @@ Use the same slug derivation as `raw/`: lowercase the title, replace spaces and 
 
 ### 5b: Write the full article file
 
-**Normal path** (fetch succeeded):
-
 Write `<PROJECT_DIR>/articles/<article-slug>.md` with this structure:
 
 ```
@@ -143,21 +147,10 @@ unfetched: false
 - Create `<PROJECT_DIR>/articles/` directory if absent.
 - `<full article text>` is the raw text retrieved by WebFetch in Step 1b — not the structured extraction (Output A), but the original article body.
 
-**Paywall / fetch failure path** (Step 1b detected no usable content):
-- Write `<PROJECT_DIR>/articles/<article-slug>.md` stub with `unfetched: true` and empty body:
-  ```
-  ---
-  url: <article URL>
-  fetched: <YYYY-MM-DD today>
-  title: <article title>
-  unfetched: true
-  ---
-  ```
-- Skip Step 5c — no rows to insert.
 
 ### 5c: Call ingest_chunks.py
 
-After writing the articles file successfully (unfetched: false), call:
+After writing the articles file successfully, call:
 
 ```
 python3 /Users/cecil/Code/me/knowledge-base/scripts/ingest_chunks.py \
@@ -175,5 +168,5 @@ Report:
 - Ticket ID and Linear URL
 - Whether the summary comment was posted successfully
 - Path to the saved raw file, or reason for skipping/failure
-- Path to `articles/<article-slug>.md` written (or stub written on paywall)
-- Number of chunks ingested into `chunks.sqlite`, or "skipped" if paywall/already processed
+- Path to `articles/<article-slug>.md` written, or "blocked" if Step 1b exited early
+- Number of chunks ingested into `chunks.sqlite`, or "skipped" if blocked/already processed

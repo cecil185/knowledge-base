@@ -32,10 +32,10 @@ For each article in the auto-ticket list that is not a duplicate: run the `creat
 
 ## Threshold articles
 
-For each article in the threshold list that is not a duplicate: present it to the user with this format:
+For each article in the threshold list that is not a duplicate: present it to the user with this format in a numbered list:
 
 ```
-[Article Title]
+1. [Article Title]
 <URL>
 <1-2 sentence summary from filter-articles>
 Create ticket? (yes/no)
