@@ -6,7 +6,7 @@ effort: medium
 ---
 # read-article
 
-Reads an article in full, then in a single LLM pass produces both a structured extraction (saved to `raw/`) and a goal-aware summary comment (posted to Linear). Updates ticket labels. Called for each ticket after `create-tickets`, and also callable on-demand.
+Reads an article in full, then in a single LLM pass produces both a structured extraction (saved to `raw/`) and a goal-aware summary comment (posted to Linear). Updates ticket labels. Called for each ticket after `bulk-ingest-articles`, and also callable on-demand.
 
 ## Active project
 

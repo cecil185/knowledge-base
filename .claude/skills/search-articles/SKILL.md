@@ -1,12 +1,12 @@
 ---
 name: search-articles
-description: Find candidate articles from the past 4 days from HN and curated blog sources; first step of /digest
+description: Find candidate articles from the past 7 days from HN and curated blog sources; first step of /digest
 model: claude-opus-4-6
 effort: medium
 ---
 # search-articles
 
-Find candidate articles published in the last 4 days from Hacker News and all sources listed in the active project's `sources.md`. Produce a flat deduplicated list ready for `filter-articles` to classify.
+Find candidate articles published in the last 7 days from Hacker News and all sources listed in the active project's `sources.md`. Produce a flat deduplicated list ready for `filter-articles` to classify.
 
 ## Active project
 
@@ -16,7 +16,7 @@ Use the `PROJECT_DIR` established by the calling skill (digest). If called direc
 
 ### 1. Calculate the cutoff
 
-Set CUTOFF to today minus 4 days.
+Set CUTOFF to today minus 7 days.
 
 - Unix epoch seconds form (for HN API): `CUTOFF_EPOCH`
 - ISO date form (for web search): `CUTOFF_DATE` in `YYYY-MM-DD` format

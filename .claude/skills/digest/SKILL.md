@@ -41,13 +41,13 @@ Run the `search-articles` skill. Pass the active `PROJECT_DIR` so it reads the c
 
 Run the `filter-articles` skill, passing the candidate list and `PROJECT_DIR`.
 
-### 4. Create tickets
+### 4. Bulk ingest articles
 
-Run the `create-tickets` skill with the classified buckets, `LINEAR_PROJECT`, and `PROJECT_DIR`.
+Run the `bulk-ingest-articles` skill with the classified buckets, `LINEAR_PROJECT`, and `PROJECT_DIR`.
 
 ### 5. Read each new ticket
 
-`create-tickets` spawns parallel `read-article` agents before returning. No action needed here — wait for it to complete.
+`bulk-ingest-articles` spawns parallel `read-article` agents before returning. No action needed here — wait for it to complete.
 
 ### 6. Report
 

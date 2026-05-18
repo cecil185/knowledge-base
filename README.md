@@ -23,7 +23,7 @@ Personal learning system. Discovers, filters, and synthesizes tech articles into
 digest
   └── search-articles          discovers candidates from HN + sources.md
   └── filter-articles          classifies into drop / auto-ticket / threshold
-  └── create-tickets           deduplicates against Linear, creates tickets
+  └── bulk-ingest-articles           deduplicates against Linear, creates tickets
         ├── check-duplicate    (per article)
         └── create-ticket      (per approved article)
         └── read-article agents (parallel, one per ticket)

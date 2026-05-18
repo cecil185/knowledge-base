@@ -6,7 +6,7 @@ effort: low
 ---
 # create-ticket
 
-Ticket creation primitive. Creates one Linear ticket for a single article. Called by `create-tickets` (batch) and `add-article` (single manual add).
+Ticket creation primitive. Creates one Linear ticket for a single article. Called by `bulk-ingest-articles` (batch) and `add-article` (single manual add).
 
 ## Input
 
@@ -24,7 +24,7 @@ Create the ticket using the Linear MCP tools with exactly these fields:
 - **Title**: `<title>` truncated to 80 characters at a word boundary
 - **Team**: `CC`
 - **Project**: `<LINEAR_PROJECT>`
-- **Labels**: `human-not-read`
+- **Labels**: `ai-discovered`
 - **Description**:
   ```
   <url>

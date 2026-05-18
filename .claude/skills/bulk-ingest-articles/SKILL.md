@@ -1,10 +1,10 @@
 ---
-name: create-tickets
+name: bulk-ingest-articles
 description: Create Linear Wiki tickets for filtered articles; deduplicates against existing tickets, prompts user for threshold articles, skips drops
 model: claude-opus-4-6
 effort: low
 ---
-# create-tickets
+# bulk-ingest-articles
 
 Third step of `/digest`. Takes the three-bucket output from `filter-articles` and creates Linear tickets for articles that passed filtering.
 
