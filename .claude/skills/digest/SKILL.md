@@ -49,11 +49,7 @@ Run the `create-tickets` skill with the classified buckets, `LINEAR_PROJECT`, an
 
 `create-tickets` spawns parallel `read-article` agents before returning. No action needed here — wait for it to complete.
 
-### 6. Compile wiki
-
-Run the `wiki:compile` skill with `PROJECT_DIR`.
-
-### 7. Report
+### 6. Report
 
 Output a single summary block — no padding:
 

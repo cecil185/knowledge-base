@@ -93,4 +93,4 @@ Each project's `sources.md` lists blog sources beyond HN. HN is always included.
 
 ## Filter eval
 
-The `/digest` filter has a labelled-eval harness under `evals/digest/`. Labels live in `evals/digest/labels.jsonl` (URL + keep/drop derived from Linear ticket outcomes), variants in `evals/digest/variants.yaml`, reports in `evals/digest/runs/`. Run `just eval` (requires `ANTHROPIC_API_KEY`) or `just eval-dry` to sanity-check. Full writeup: [projects/data-ai-engineering/wiki/notes/digest-filter-eval.md](projects/data-ai-engineering/wiki/notes/digest-filter-eval.md).
+The `/digest` filter step has a labelled-eval harness under `evals/digest/`. Labels in `evals/digest/labels.jsonl`, variants in `evals/digest/variants.yaml`, reports in `evals/digest/runs/`. Run `just eval-filter` (requires `ANTHROPIC_API_KEY`) or `just eval-filter-dry` to sanity-check without LLM calls. Full writeup: [projects/data-ai-engineering/wiki/notes/digest-filter-eval.md](projects/data-ai-engineering/wiki/notes/digest-filter-eval.md).

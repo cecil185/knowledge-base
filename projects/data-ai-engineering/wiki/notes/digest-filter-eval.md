@@ -95,14 +95,14 @@ pip install anthropic pyyaml
 export ANTHROPIC_API_KEY=sk-...
 
 # Run against full labels (writes report to evals/digest/runs/)
-just eval                 # variant=v1 by default
-just eval variant=v2      # if v2 exists in variants.yaml
+just eval-filter               # variant=v1 by default
+just eval-filter variant=v2    # if v2 exists in variants.yaml
 
 # Dry-run (no LLM calls, mirrors labels as predictions — sanity-checks report format)
-just eval-dry
+just eval-filter-dry
 
 # Sanity-check on fixture set (5 known examples)
-just eval-fixtures
+just eval-filter-fixtures
 
 # Run unit tests
 just test
@@ -121,8 +121,8 @@ Use the sync script — it reads ticket state from Linear and appends any URLs n
 
 ```bash
 export LINEAR_API_KEY=lin_api_...          # one-time setup
-just sync-labels-dry                        # preview what would be added
-just sync-labels                            # actually append
+just sync-filter-labels-dry                 # preview what would be added
+just sync-filter-labels                     # actually append
 ```
 
 The auto-filled `reason` field is generic ("Auto-synced from Linear …") — edit it to capture the *why* of the keep/drop decision before committing. That nuance is what makes the labelled set valuable later when investigating disagreements.
