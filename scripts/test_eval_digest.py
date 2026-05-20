@@ -97,7 +97,7 @@ def test_load_labels_skips_unfetchable_in_metrics():
         for e in examples if not e.unfetchable
     ]
     metrics = ed.compute_metrics(examples, preds)
-    assert metrics["tp"] == 2
+    assert metrics["tp"] == 1.0  # 2 keep × 0.5 (auto-ticket bucket)
     assert metrics["tn"] == 2
     assert metrics["fp"] == 0
     assert metrics["fn"] == 0
@@ -118,7 +118,7 @@ def test_compute_metrics_perfect():
         ed.Prediction("https://b.com/2", "B", False, "drop", ""),
     ]
     m = ed.compute_metrics(examples, preds)
-    assert m["tp"] == 1
+    assert m["tp"] == 0.5  # auto-ticket bucket scores 0.5 TP
     assert m["tn"] == 1
     assert m["fp"] == 0
     assert m["fn"] == 0
@@ -218,7 +218,7 @@ def test_write_report_dry_run(capsys):
     result = ed.RunResult(
         variant_name="v1",
         labels_file="evals/digest/labels.jsonl",
-        goal_hash="abc123",
+        
         goal_snippet="What: ship faster...",
         examples=examples,
         predictions=preds,
@@ -247,7 +247,7 @@ def test_write_report_writes_file():
     result = ed.RunResult(
         variant_name="v1",
         labels_file="evals/digest/labels.jsonl",
-        goal_hash="abc123",
+        
         goal_snippet="What: ship faster...",
         examples=examples,
         predictions=preds,

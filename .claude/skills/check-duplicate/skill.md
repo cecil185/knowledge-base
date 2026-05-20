@@ -2,6 +2,9 @@
 name: check-duplicate
 description: >
   Checks whether an article URL already exists as a Linear ticket in the active project. Returns the ticket ID if found, null if not. Primitive called by add-article and bulk-ingest-articles before creating tickets.
+when_to_use: >
+  Trigger when a URL needs deduplication before ticket creation. Called internally by
+  add-article and bulk-ingest-articles; not typically invoked directly by the user.
 user-invocable: false
 model: claude-opus-4-6
 effort: low

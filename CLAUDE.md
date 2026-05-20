@@ -67,6 +67,7 @@ knowledge-base/
 /wiki:compile      — synthesize raw/ docs into wiki/ concepts and tool articles
 /wiki:lint         — audit wiki for gaps and broken links
 /wiki:purge        — delete raw files for tickets labelled delete-from-wiki (Done → Cancelled)
+/eval-variants     — generate filter variants, run evals, compare Precision/Recall/F1 vs baseline
 ```
 
 ## /digest flow
@@ -79,7 +80,7 @@ knowledge-base/
    - **Auto-ticket** — clear match; Linear ticket created automatically
    - **Threshold** — 1–2 sentence summary shown to Cecil; ticket created if approved
 5. Deduplicate: skip any URL already in the project's Linear project
-6. For each new ticket: read article in full → comment with TLDR / Goal relation / How to apply
+6. For each new ticket: read article in full → comment with TLDR
 7. Tags: `human-not-read` set at creation
 8. `wiki:ingest` saves article to `projects/<slug>/raw/<slug>.md` and appends to `projects/<slug>/raw/INDEX.md`; `wiki:compile` synthesizes into `projects/<slug>/wiki/`
 

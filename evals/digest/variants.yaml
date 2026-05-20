@@ -1,7 +1,8 @@
 # Digest Filter Variant Registry
 #
-# Each variant ties a filter prompt version to a goal.md snapshot.
-# The eval runner references these by name in each run report.
+# Each variant is a fully self-contained snapshot: (prompt, goal) → score.
+# This makes it safe to test changes to either the filter skill or goal.md
+# in isolation — each variant captures both so results are reproducible.
 #
 # Fields:
 #   name:          Short identifier used in run report filenames (e.g. "v1")
@@ -9,18 +10,55 @@
 #   prompt_inline: The full filter prompt text, embedded here for reproducibility.
 #                  Takes precedence over prompt_file if both are present.
 #   prompt_file:   Fallback: path to a skill file containing the filter prompt.
+#   goal_inline:   The full goal.md content for this variant. When present, the
+#                  runner uses this instead of reading the live goal.md — making
+#                  the variant fully reproducible regardless of goal drift.
+#                  If absent, the runner falls back to the live goal.md (legacy).
 #   model:         Claude model ID to use for this variant. Overrides --model CLI flag.
 #                  Leave unset to use the CLI default (claude-sonnet-4-6).
-#   goal_hash:     SHA256 of goal.md at the time this variant was defined.
-#                  Run: shasum -a 256 projects/data-ai-engineering/goal.md
 #   created_at:    ISO date
 #   notes:         Free-text rationale or A/B conclusion (populated after a run)
 
 variants:
   - name: v1
     description: "Baseline — production filter as of 2026-05-10; strict auto-ticket, err toward threshold"
-    goal_hash: "a9b74950fb8b"
     created_at: "2026-05-10"
+    goal_inline: |
+      # Cecil's Learning Goal
+
+      _Last updated: 2026-05-10._
+
+      ---
+
+      ## Goal
+
+      **What:** Deliver production-grade software at work without reading every line of code — with end-to-end tests, guardrails, and safe sandboxes that make the accelerated pace safe.
+      **Why:** Get the 9-to-5 done in 3 hours a day.
+      **Horizon:** (not set)
+      **Success looks like:** All tickets completed, output quality indistinguishable from before.
+
+      ---
+
+      ## Reading intent
+
+      I'm scanning for techniques, tools, and workflows that let me ship faster without accumulating risk — specifically AI-assisted coding, test automation, and agentic guardrails I can apply directly in my data engineering work.
+
+      ---
+
+      ## High-relevance article
+
+      - Demonstrates AI-assisted coding in a real production codebase (not toy examples)
+      - Covers automated testing strategies for AI-generated code — e2e, contract, or property-based tests
+      - Shows how to build or configure guardrails, sandboxes, or review gates in an agentic workflow
+      - Introduces a tool or workflow that measurably reduces the human-review burden on code changes
+      - Case study of an engineer shipping significantly more with the same or fewer hours
+
+      ## Low-relevance article
+
+      - AI trend pieces with no concrete technique or tool to adopt
+      - Pure data engineering ops content with no AI-assisted workflow angle
+      - Beginner-level LLM tutorials covering APIs or concepts I already use
+      - Research papers on model internals with no near-term application to coding workflows
     prompt_inline: |
       # filter-articles
 

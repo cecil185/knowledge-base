@@ -17,7 +17,6 @@ Environment:
 """
 
 import argparse
-import hashlib
 import json
 import re
 import subprocess
@@ -60,7 +59,6 @@ class Prediction:
 class RunResult:
     variant_name: str
     labels_file: str
-    goal_hash: str
     goal_snippet: str    # first 200 chars of goal.md
     examples: list[LabeledExample] = field(default_factory=list)
     predictions: list[Prediction] = field(default_factory=list)
@@ -121,9 +119,6 @@ def load_filter_prompt(prompt_file: Path) -> str:
             return parts[2].strip()
     return text
 
-
-def hash_file(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 # ---------------------------------------------------------------------------
@@ -242,7 +237,6 @@ def write_report(result: RunResult, metrics: dict, runs_dir: Path, dry_run: bool
         f"**Variant:** `{result.variant_name}`  ",
         f"**Commit:** `{commit}`  ",
         f"**Labels file:** `{result.labels_file}`  ",
-        f"**Goal snapshot (SHA-256):** `{result.goal_hash[:12]}…`  ",
         "",
         "---",
         "",
@@ -517,10 +511,13 @@ def main():
     prompt_body = load_prompt_body(variant, ROOT)
     # variant-level model overrides CLI flag
     model = variant.get("model", args.model)
-    goal_text = goal_path.read_text()
+    # goal_inline makes the variant self-contained; fall back to live goal.md for legacy variants
+    if "goal_inline" in variant:
+        goal_text = variant["goal_inline"].strip()
+    else:
+        goal_text = goal_path.read_text()
     sources_path = ROOT / f"projects/{args.project}/sources.md"
     sources_text = sources_path.read_text() if sources_path.exists() else ""
-    goal_hash = hash_file(goal_path)
     goal_snippet = goal_text[:200].replace("\n", " ").strip()
 
     examples = load_labels(labels_path)
@@ -577,7 +574,6 @@ def main():
     result = RunResult(
         variant_name=args.variant,
         labels_file=str(labels_path.relative_to(ROOT)),
-        goal_hash=goal_hash,
         goal_snippet=goal_snippet,
         examples=examples,
         predictions=predictions,
