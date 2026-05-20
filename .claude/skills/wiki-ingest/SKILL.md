@@ -1,8 +1,18 @@
 ---
 name: wiki:ingest
-description: Save a fetched article or topic research to the active project's raw/ as structured markdown; deduplicates against raw/INDEX.md and Linear
+description: >
+  Fetches and saves a URL or researches a topic, writing structured markdown extractions
+  to the active project's raw/ directory. Deduplicates against raw/INDEX.md and Linear.
+  Use when the user says "ingest this URL", "save this article", "add this to the wiki",
+  or "research <topic> for the wiki".
+when_to_use: >
+  Trigger when user says "ingest this URL", "save this article", "add this to the wiki",
+  "research <topic> for the wiki", "wiki:ingest <url>", or provides a URL and asks to
+  save it to the knowledge base.
+argument-hint: "<url-or-topic> [--project <slug>]"
 model: claude-opus-4-6
 effort: medium
+disable-model-invocation: true
 ---
 # wiki:ingest
 

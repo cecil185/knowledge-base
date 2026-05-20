@@ -1,12 +1,19 @@
 ---
 name: article-critique
-description: On-demand deep review of a single article URL. Rates it and posts a summary comment.
+description: >
+  Rates a single article URL against the active project's goal on four axes (Signal, Goal fit, Actionability, Timing) and posts a scored summary comment to Linear. Use when user says "critique this article", "rate this URL", "is this worth reading", or "review this link".
+when_to_use: >
+  Trigger when user provides a URL and asks for an opinion or rating, e.g. "critique this", "rate this article", "is this worth reading?", "should I read this?", "review https://...".
+argument-hint: "<url>"
+disable-model-invocation: true
 model: claude-opus-4-6
 effort: medium
 ---
 # Article Critique
 
 On-demand review of a single article. Use when given a URL directly — not through `/digest`. Produces a scored rating report.
+
+**Example:** `/article-critique https://blog.pragmaticengineer.com/software-architecture-is-overrated/`
 
 ## Steps
 

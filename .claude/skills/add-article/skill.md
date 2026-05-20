@@ -1,12 +1,19 @@
 ---
 name: add-article
-description: Add a manually-found article URL to the active project — creates a Linear ticket, reads in full, and updates the wiki.
+description: >
+  Adds a single manually-found article URL to the active project — deduplicates against Linear, creates a ticket, fetches and summarizes the full article, and updates the wiki. Use when user says "add this article", "save this link", "ingest this URL", or pastes a URL and asks to track it.
+when_to_use: >
+  Trigger when user provides a URL and wants to add it to the knowledge base, e.g. "add this article: https://...", "save this link", "ingest this URL", "track this article".
+argument-hint: "<url> [--project <slug>]"
+disable-model-invocation: true
 model: claude-opus-4-6
 effort: medium
 ---
 # add-article
 
 Single-article entry point for manually-found articles.
+
+**Example:** `/add-article https://martinfowler.com/articles/micro-frontends.html`
 
 ## Arguments
 

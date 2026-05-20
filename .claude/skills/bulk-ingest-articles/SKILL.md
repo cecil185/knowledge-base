@@ -1,12 +1,22 @@
 ---
 name: bulk-ingest-articles
-description: Create Linear Wiki tickets for filtered articles; deduplicates against existing tickets, prompts user for threshold articles, skips drops
+description: >
+  Creates Linear tickets for filtered article buckets — deduplicates against existing tickets,
+  prompts user approval for threshold articles, and spawns parallel read-article agents for
+  each created ticket. Third step of /digest; called after filter-articles completes.
+when_to_use: >
+  Trigger when the filter-articles output is ready and tickets need to be created, or when
+  the user says "bulk ingest", "create tickets for these articles", or "process the filtered articles".
+argument-hint: "[auto-ticket list] [threshold list] [drop list]"
+disable-model-invocation: true
 model: claude-opus-4-6
 effort: low
 ---
 # bulk-ingest-articles
 
 Third step of `/digest`. Takes the three-bucket output from `filter-articles` and creates Linear tickets for articles that passed filtering.
+
+**Example:** Called automatically by `/digest` after `filter-articles` returns classified buckets.
 
 ## Active project
 
@@ -20,17 +30,19 @@ Three lists produced by `filter-articles`:
 - **threshold** — borderline articles with 1-2 sentence summaries; require user approval
 - **drop** — low-quality or low-relevance articles; skip silently
 
-## Deduplication
+## Steps
 
-Before creating any ticket, run the `check-duplicate` skill for each article URL, passing `LINEAR_PROJECT` and `PROJECT_DIR`. If `linear_ticket` is not null, the article already has a ticket — skip it and record it in the skipped-duplicates list.
+### 1. Deduplicate all candidates
 
-Do this check for threshold articles before prompting the user — no point asking about a duplicate.
+Before creating any ticket, run the `check-duplicate` skill for each article URL, passing `LINEAR_PROJECT` and `PROJECT_DIR`. If `linear_ticket` is not null, skip it and record it in the skipped-duplicates list.
 
-## Auto-ticket articles
+Run deduplication for threshold articles before prompting the user — no point asking about a duplicate.
+
+### 2. Create auto-ticket articles
 
 For each article in the auto-ticket list that is not a duplicate: run the `create-ticket` skill immediately without asking the user.
 
-## Threshold articles
+### 3. Process threshold articles
 
 For each article in the threshold list that is not a duplicate: present it to the user with this format in a numbered list:
 
@@ -43,7 +55,7 @@ Create ticket? (yes/no)
 
 Wait for the user's response before moving to the next threshold article. Run `create-ticket` only if the user approves. Record rejections in the output.
 
-## Drop articles
+### 4. Skip drop articles
 
 Do nothing. Do not mention them.
 

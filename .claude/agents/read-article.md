@@ -46,7 +46,7 @@ Use `mcp__linear-server__save_comment` with `issueId` set to the ticket ID. Writ
 
 **TLDR:** [2-3 sentences capturing the core finding and why it matters]
 
-**Goal relation:** [1 sentences on how this relates to the active project's learning goal]
+**Goal relation:** [30 characters max]
 
 **How to apply:**
 - [1-3 specific, actionable items — concrete enough to implement tomorrow]

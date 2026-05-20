@@ -1,8 +1,18 @@
 ---
 name: wiki:compile
-description: Process new raw/ docs and update wiki/ — synthesizes concepts and tools into evergreen articles with WikiLink cross-references
+description: >
+  Synthesizes all new raw/ docs into evergreen wiki articles (concepts and tools) with
+  WikiLink cross-references. Creates or extends articles — never replaces existing content.
+  Called at the end of /digest and on-demand. Use when the user says "compile the wiki",
+  "update the wiki", "synthesize raw docs", or "run wiki:compile".
+when_to_use: >
+  Trigger when user says "compile the wiki", "update the wiki", "synthesize raw docs",
+  "process new articles", or "run wiki:compile". Also triggered automatically at the end
+  of /digest.
+argument-hint: "[--project <slug>]"
 model: claude-opus-4-6
 effort: high
+disable-model-invocation: true
 ---
 # wiki:compile
 

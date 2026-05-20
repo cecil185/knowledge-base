@@ -1,12 +1,14 @@
 ---
 name: check-duplicate
-description: Check whether an article URL already exists in the active Linear project; returns the ticket ID if found
+description: >
+  Checks whether an article URL already exists as a Linear ticket in the active project. Returns the ticket ID if found, null if not. Primitive called by add-article and bulk-ingest-articles before creating tickets.
+user-invocable: false
 model: claude-opus-4-6
 effort: low
 ---
 # check-duplicate
 
-Deduplication primitive. Given a URL and the active project context, checks two stores and reports what already exists.
+Deduplication primitive. Given a URL and the active project context, checks Linear and reports what already exists.
 
 ## Input
 
@@ -21,7 +23,7 @@ Before any comparison, normalise the input URL and all stored URLs the same way:
 - Remove all `utm_*` query parameters
 - Treat `http://` and `https://` as identical (compare without scheme prefix)
 
-## Check 1: Linear
+## Check: Linear
 
 Search the active Linear project (team CC, project `LINEAR_PROJECT`) for any ticket whose description contains the normalised URL. Use the Linear MCP tools.
 

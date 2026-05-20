@@ -1,16 +1,27 @@
 ---
 name: search-articles
-description: Find candidate articles from the past 7 days from HN and curated blog sources; first step of /digest
+description: >
+  Finds candidate articles published in the past 7 days from Hacker News and all curated
+  blog sources in the active project's sources.md. Produces a flat deduplicated list ready
+  for filter-articles to classify. This is the first step of /digest and is not typically
+  called directly by users.
+when_to_use: >
+  Called as the first step of /digest. Rarely triggered directly — use /digest instead.
+  Trigger directly when the user says "search for articles", "find new articles", or
+  "what's been published this week".
 model: claude-opus-4-6
 effort: medium
 ---
 # search-articles
 
-Find candidate articles published in the last 7 days from Hacker News and all sources listed in the active project's `sources.md`. Produce a flat deduplicated list ready for `filter-articles` to classify.
+Find candidate articles published in the last 7 days from Hacker News and all sources listed in
+the active project's `sources.md`. Produce a flat deduplicated list ready for `filter-articles`
+to classify.
 
 ## Active project
 
-Use the `PROJECT_DIR` established by the calling skill (digest). If called directly, determine the active project by reading `CLAUDE.md` and using the **Default project** slug. Set `PROJECT_DIR = projects/<slug>`.
+Use the `PROJECT_DIR` established by the calling skill (digest). If called directly, determine the
+active project by reading `CLAUDE.md` and using the **Default project** slug. Set `PROJECT_DIR = projects/<slug>`.
 
 ## Steps
 
@@ -59,7 +70,9 @@ From each result, extract:
 
 ### 4. Apply blocklist
 
-Read the **Blocklist** section of `<PROJECT_DIR>/sources.md` (if present). Drop any candidate whose URL host matches a blocklisted domain (exact match or subdomain). Match is case-insensitive and ignores `www.` prefix.
+Read the **Blocklist** section of `<PROJECT_DIR>/sources.md` (if present). Drop any candidate whose
+URL host matches a blocklisted domain (exact match or subdomain). Match is case-insensitive and
+ignores `www.` prefix.
 
 ### 5. Deduplicate
 
@@ -72,7 +85,8 @@ Keep only the first occurrence of each URL across all result sets.
 
 ### 6. Output
 
-Emit a flat markdown list. Aim for 20–40 candidates. Do not filter or rank at this stage — include everything that passed deduplication.
+Emit a flat markdown list. Aim for 20–40 candidates. Do not filter or rank at this stage —
+include everything that passed deduplication.
 
 Format each candidate as:
 
@@ -84,4 +98,14 @@ Format each candidate as:
   Snippet: <snippet or "none">
 ```
 
-If fewer than 10 candidates are found, note that the search returned limited results — do not pad with low-confidence items.
+Example output:
+```
+- **DuckDB 1.1 Release Notes**
+  URL: https://duckdb.org/2024/01/15/announcing-duckdb-11.html
+  Source: duckdb.org
+  Date: 2024-01-15
+  Snippet: DuckDB 1.1 introduces parallel CSV reader and improved JSON support.
+```
+
+If fewer than 10 candidates are found, note that the search returned limited results — do not pad
+with low-confidence items.
