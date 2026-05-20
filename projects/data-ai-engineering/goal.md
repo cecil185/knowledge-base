@@ -1,6 +1,6 @@
 # Cecil's Learning Goal
 
-_Last updated: 2026-05-10._
+_Last updated: 2026-05-20._
 
 ---
 
@@ -32,4 +32,4 @@ I'm scanning for techniques, tools, and workflows that let me ship faster withou
 - AI trend pieces with no concrete technique or tool to adopt
 - Pure data engineering ops content with no AI-assisted workflow angle
 - Beginner-level LLM tutorials covering APIs or concepts I already use
-- Research papers on model internals with no near-term application to coding workflows
+- Research papers on model internals — unless the snippet explicitly mentions near-term applicability to coding, testing, or data engineering workflows
