@@ -1,6 +1,15 @@
 ---
 name: goal-refine
-description: Create or refine the user's single learning goal through Socratic questioning. Use when asked to "set my goal", "update my goal", "refine my goal", or "what's my goal".
+description: >
+  Creates or refines the active project's single learning goal through Socratic questioning.
+  Writes the result to goal.md. The goal.md output drives all article filtering and scoring
+  in the system.
+when_to_use: >
+  Trigger when the user says "set my goal", "update my goal", "refine my goal", "what's my
+  goal", "create goal.md", or starts the knowledge-base system for the first time without
+  an existing goal.
+argument-hint: "[project-slug]"
+disable-model-invocation: true
 model: claude-opus-4-6
 effort: medium
 ---

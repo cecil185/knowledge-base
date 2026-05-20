@@ -1,6 +1,15 @@
 ---
 name: digest
-description: End-to-end pipeline — discover articles, filter, ticket, read in full, and update the wiki. Primary entry point; run /digest to kick everything off.
+description: >
+  Runs the end-to-end article pipeline — discovers candidates, filters against the current
+  goal, creates Linear tickets, reads qualifying articles in full, and compiles the wiki.
+  Primary entry point for the knowledge-base system.
+when_to_use: >
+  Trigger when the user says "run digest", "run the pipeline", "find new articles", "kick off
+  digest", or "/digest". Also trigger when the user wants to discover and ingest new articles
+  for the active project.
+argument-hint: "[project-slug]"
+disable-model-invocation: true
 model: claude-opus-4-6
 effort: high
 ---

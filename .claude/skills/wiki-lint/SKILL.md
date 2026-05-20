@@ -1,8 +1,19 @@
 ---
 name: wiki:lint
-description: Audit the wiki for broken links, missing index entries, stubs, uncompiled raw docs, coverage gaps, and suggested connections. Optionally repairs Critical issues and writes stubs for gaps. Run periodically to keep the knowledge base healthy.
+description: >
+  Audits the wiki knowledge base for broken links, missing index entries, stubs,
+  uncompiled raw docs, coverage gaps, and suggested connections. Writes findings to
+  wiki/LINT.md. Optionally repairs Critical issues and writes stubs for gaps with --fix.
+  Use when the user says "lint the wiki", "audit the wiki", "check wiki health", or
+  "run wiki:lint".
+when_to_use: >
+  Trigger when user says "lint the wiki", "audit the wiki", "check wiki health",
+  "find broken links in the wiki", "wiki:lint", or "run wiki:lint". Run periodically
+  after large wiki:compile batches.
+argument-hint: "[--fix] [--project <slug>]"
 model: claude-opus-4-6
 effort: medium
+disable-model-invocation: true
 ---
 # wiki:lint
 

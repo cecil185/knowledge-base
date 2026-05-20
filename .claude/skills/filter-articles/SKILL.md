@@ -1,12 +1,19 @@
 ---
 name: filter-articles
-description: Classify candidate articles into drop/auto-ticket/threshold buckets using goal.md signals; second step of /digest
+description: >
+  Classifies a list of candidate articles into drop/auto-ticket/threshold buckets using
+  goal.md signals. Second step of /digest; called after search-articles returns candidates.
+when_to_use: >
+  Trigger when a list of candidate articles needs classification against the active project's
+  goal. Called internally by digest after search-articles; not typically invoked directly.
 model: claude-opus-4-6
 effort: medium
 ---
 # filter-articles
 
-Classify a list of candidate articles into three buckets using only title, source, and snippet — no full article fetching. Classification is driven entirely by the signals in the active project's `goal.md`.
+Classifies a list of candidate articles into three buckets using only title, source, and snippet — no full article fetching. Classification is driven entirely by the signals in the active project's `goal.md`.
+
+**Example:** Given 20 candidates from search-articles, classifies 3 as auto-ticket (concrete tool releases matching goal signals), 5 as threshold (plausible but thin snippets), and 12 as drop (opinion roundups, vendor marketing).
 
 ## Active project
 

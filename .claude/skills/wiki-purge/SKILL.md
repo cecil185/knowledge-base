@@ -1,8 +1,17 @@
 ---
 name: wiki:purge
-description: Delete raw files for Linear tickets labelled delete-from-wiki in Done status, then mark those tickets Cancelled
+description: >
+  Deletes raw/ files for Linear tickets labelled delete-from-wiki that are in Done status,
+  removes their INDEX.md entries, then moves each ticket to Canceled. Requires user
+  confirmation before deleting anything. Use when the user says "purge the wiki",
+  "clean up deleted articles", or "run wiki:purge".
+when_to_use: >
+  Trigger when user says "purge the wiki", "clean up deleted articles", "run wiki:purge",
+  or "process delete-from-wiki tickets".
+argument-hint: "[--project <slug>]"
 model: claude-opus-4-6
 effort: low
+disable-model-invocation: true
 ---
 # wiki:purge
 

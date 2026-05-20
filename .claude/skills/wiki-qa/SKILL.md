@@ -1,8 +1,18 @@
 ---
 name: wiki:qa
-description: Answer research questions by synthesizing the local wiki knowledge base. Use when asked "what do I know about X", "summarize what I've learned about Y", or "have I seen anything on Z".
+description: >
+  Answers research questions by synthesizing the local wiki knowledge base. Uses the
+  Anthropic Citations API with retrieved chunks when available; falls back to synthesizing
+  from wiki/ and raw/ files with [synthesis] tags. Saves answers to wiki/qa/ and updates
+  INDEX.md. Use when the user asks "what do I know about X", "summarize what I've learned
+  about Y", or "have I seen anything on Z".
+when_to_use: >
+  Trigger when user asks "what do I know about X", "summarize what I've learned about Y",
+  "have I seen anything on Z", "compare X and Y from my notes", or "wiki:qa <question>".
+argument-hint: "\"<question>\" [--project <slug>]"
 model: claude-opus-4-6
 effort: medium
+disable-model-invocation: true
 ---
 # wiki:qa
 

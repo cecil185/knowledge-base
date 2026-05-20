@@ -1,12 +1,21 @@
 ---
 name: create-ticket
-description: Create a single Linear article ticket with correct format, labels, and project assignment; returns the created ticket ID
+description: >
+  Creates a single Linear article ticket with correct format, labels, and project assignment.
+  Returns the created ticket ID. Called by add-article (single manual add) and
+  bulk-ingest-articles (batch processing).
+when_to_use: >
+  Trigger when a new article ticket needs to be created in Linear. Called internally by
+  add-article and bulk-ingest-articles; not typically invoked directly by the user.
+disable-model-invocation: true
 model: claude-opus-4-6
 effort: low
 ---
 # create-ticket
 
 Ticket creation primitive. Creates one Linear ticket for a single article. Called by `bulk-ingest-articles` (batch) and `add-article` (single manual add).
+
+**Example:** Called by `add-article` with title "Patterns of Distributed Systems", URL, and a 2-sentence summary to create ticket `CC-42`.
 
 ## Input
 

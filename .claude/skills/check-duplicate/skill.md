@@ -13,6 +13,8 @@ effort: low
 
 Deduplication primitive. Given a URL and the active project context, checks Linear and reports what already exists.
 
+**Example:** Called by `add-article` before creating a ticket for `https://martinfowler.com/articles/patterns-of-distributed-systems/`.
+
 ## Input
 
 - `URL` — the article URL to check

@@ -1,6 +1,14 @@
 ---
 name: read-article
-description: Fetch an article, produce a structured extraction for raw/ and a goal-aware AI summary for Linear — in a single pass. Updates ticket labels.
+description: >
+  Fetches a full article, produces a structured extraction saved to raw/ and a goal-aware
+  AI summary posted as a Linear comment — in a single pass. Called after ticket creation
+  by bulk-ingest-articles, and directly on demand.
+when_to_use: >
+  Trigger when the user says "read this article", "summarize ticket CC-42", "process this
+  URL", "read https://...", or when bulk-ingest-articles spawns agents after ticket creation.
+argument-hint: "<ticket-id | url>"
+disable-model-invocation: true
 model: claude-opus-4-6
 effort: medium
 ---
